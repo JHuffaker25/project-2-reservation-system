@@ -1,0 +1,20 @@
+spring:
+    application:
+        name: backend
+
+    output:
+        ansi:
+            enabled: ALWAYS
+
+    mongodb:
+        uri: mongodb+srv://just1005_db_user:DgpHwLuWnMDjhyRo@cluster0.lkzo49d.mongodb.net/?appName:Cluster0
+
+
+logging:
+    level:
+        org.springframework.data.mongodb: DEBUG
+        com.skillstorm: DEBUG
+
+
+server: 
+    port: 8282
