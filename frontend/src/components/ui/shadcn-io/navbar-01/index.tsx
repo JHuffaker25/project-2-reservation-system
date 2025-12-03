@@ -88,20 +88,20 @@ export interface Props extends React.HTMLAttributes<HTMLElement> {
   onCtaClick?: () => void;
 }
 
-// Default navigation links
-const defaultNavigationLinks: NavLink[] = [
-  { href: '#', label: 'Home', active: false },
-  { href: '#features', label: 'Features' },
-  { href: '#pricing', label: 'Pricing' },
-  { href: '#about', label: 'About' },
-];
+// // Default navigation links
+// const defaultNavigationLinks: NavLink[] = [
+//   { href: '#', label: 'Home', active: false },
+//   { href: '#features', label: 'Features' },
+//   { href: '#pricing', label: 'Pricing' },
+//   { href: '#about', label: 'About' },
+// ];
 
-// Admin links
-const adminNavigationLinks: NavLink[] = [
-  { href: '#', label: 'Rooms' },
-  { href: '#', label: 'Reservations' },
-  { href: '#', label: 'Transactions' },
-];
+// // Admin links
+// const adminNavigationLinks: NavLink[] = [
+//   { href: '#', label: 'Rooms' },
+//   { href: '#', label: 'Reservations' },
+//   { href: '#', label: 'Transactions' },
+// ];
 
 // Guest links
 const guestNavigationLinks: NavLink[] = [
