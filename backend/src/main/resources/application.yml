@@ -7,7 +7,7 @@ spring:
             enabled: ALWAYS
 
     mongodb:
-        uri: mongodb+srv://just1005_db_user:DgpHwLuWnMDjhyRo@cluster0.lkzo49d.mongodb.net/?appName:Cluster0
+           uri: mongodb+srv://${MONGODB_USER}:${MONGODB_PASS}@cluster0.lkzo49d.mongodb.net/?appName=Cluster0
 
 
 logging:
