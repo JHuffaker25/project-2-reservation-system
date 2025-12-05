@@ -38,4 +38,4 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy to S3
-        run: aws s3 sync dist/ s3://your-bucket-name --delete
+        run: aws s3 sync dist/ s3://project2-frontend-group1-397345411365-useast1 --delete
