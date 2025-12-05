@@ -24,9 +24,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        working-directory: frontend/
         run: npm ci
 
       - name: Build
+        working-directory: frontend/
         run: npm run build
 
       - name: Configure AWS credentials
@@ -37,4 +39,4 @@ jobs:
           aws-region: us-east-1  
 
       - name: Deploy to S3
-        run: aws s3 sync Actions-demo/dist/actions-demo s3://
+        run: aws s3 sync dist/ s3://project2-frontend-group1-397345411365-useast1/
