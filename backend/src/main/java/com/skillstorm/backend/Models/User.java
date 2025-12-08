@@ -1,8 +1,8 @@
 package com.skillstorm.backend.Models;
 
-public class Users {
+public class User {
 	private int userId;
-    private String email;
+	private String email;
 	private String password;
 	private Boolean role;
 	private String firstName;
