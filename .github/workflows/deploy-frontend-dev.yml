@@ -1,9 +1,8 @@
-name: Deploy Frontend to S3
+name: Group1 frontend dev pipeline
 
 on:
   push:
     branches:
-      - main
       - dev
 
 jobs:
@@ -39,9 +38,4 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy to S3
-        run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            aws s3 sync dist/ s3://project2-frontend-group1-397345411365-useast1
-          elif [ "${{ github.ref_name }}" = "dev" ]; then
-            aws s3 sync dist/ s3://project2-frontend-group1-dev-397345411365-us-east-1
-          fi
+        run: aws s3 sync dist/ s3://project2-frontend-group1-dev-397345411365-us-east-1
