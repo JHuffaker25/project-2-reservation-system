@@ -14,8 +14,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Link } from "react-router"
 
-export function LoginForm({
+export function SigninForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -23,9 +24,9 @@ export function LoginForm({
         <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
             <CardHeader>
-            <CardTitle>Login to your account</CardTitle>
+            <CardTitle>Sign in to your account</CardTitle>
             <CardDescription>
-                Enter your email below to login to your account
+                Enter your email below to sign in to your account
             </CardDescription>
             </CardHeader>
             <CardContent>
@@ -54,12 +55,12 @@ export function LoginForm({
                     <Input id="password" type="password" autoComplete="current-password" required />
                 </Field>
                 <Field>
-                    <Button type="submit">Login</Button>
+                    <Button type="submit">Sign in</Button>
                     <Button variant="outline" type="button">
-                    Login with Google
+                    Sign in with Google
                     </Button>
                     <FieldDescription className="text-center">
-                    Don&apos;t have an account? <a href="#">Sign up</a>
+                    Don&apos;t have an account? <Link to='/signup'>Sign up</Link>
                     </FieldDescription>
                 </Field>
                 </FieldGroup>

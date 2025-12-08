@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -103,11 +104,15 @@ export interface Props extends React.HTMLAttributes<HTMLElement> {
 //   { href: '#', label: 'Transactions' },
 // ];
 
-// Guest links
-const guestNavigationLinks: NavLink[] = [
-  { href: '#', label: 'Home' },
-  { href: '#', label: 'Reservations' },
-  { href: '#', label: 'Account' },
+// Test links
+const testNavigationLinks: NavLink[] = [
+  { href: '/', label: 'Home' },
+  { href: '/rooms', label: 'Rooms' },
+  { href: '/reservations', label: 'Reservations' },
+  { href: '/transactions', label: 'Transactions' },
+  { href: '/manage-reservations', label: 'Manage Reservations' },
+  { href: '/manage-rooms', label: 'Manage Rooms' },
+  { href: '/profile', label: 'Profile' },
 ];
 
 export const Navbar = React.forwardRef<HTMLElement, Props>(
@@ -115,12 +120,12 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
     {
       className,
       logo = <Logo />,
-      logoHref = '#',
-      navigationLinks = guestNavigationLinks,
+      logoHref = '/',
+      navigationLinks = testNavigationLinks,
       signInText = 'Sign In',
-      signInHref = '#signin',
+      signInHref = '/signin',
       ctaText = 'Book Now',
-      ctaHref = '#get-started',
+      ctaHref = '/signin',
       onSignInClick,
       onCtaClick,
       ...props
@@ -169,7 +174,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
         )}
         {...(props as any)}
       >
-        <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between gap-4">
+        <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-4">
           {/* Left side */}
           <div className="flex items-center gap-2">
             {/* Mobile menu trigger */}
@@ -185,86 +190,86 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-48 p-2">
-                <NavigationMenu className="max-w-none">
-                  <NavigationMenuList className="flex-col items-start gap-1">
-                    {navigationLinks.map((link, index) => (
-                      <NavigationMenuItem key={index} className="w-full">
-                        <button
-                          onClick={(e) => e.preventDefault()}
-                          className={cn(
-                            "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
-                            link.active 
-                              ? "bg-accent text-accent-foreground" 
-                              : "text-foreground/80"
-                          )}
-                        >
-                          {link.label}
-                        </button>
-                      </NavigationMenuItem>
-                    ))}
-                  </NavigationMenuList>
-                </NavigationMenu>
+                  <NavigationMenu className="max-w-none">
+                    <NavigationMenuList className="flex-col items-start gap-1">
+                      {navigationLinks.map((link, index) => (
+                        <NavigationMenuItem key={index} className="w-full">
+                          <button
+                            className={cn(
+                              "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
+                              link.active
+                                ? "bg-accent text-accent-foreground"
+                                : "text-foreground/80"
+                            )}
+                          >
+                            {link.label}
+                          </button>
+                        </NavigationMenuItem>
+                      ))}
+                    </NavigationMenuList>
+                  </NavigationMenu>
                 </PopoverContent>
               </Popover>
             )}
             {/* Main nav */}
             <div className="flex items-center gap-6">
-              <button 
-                onClick={(e) => e.preventDefault()}
-                className="flex items-center space-x-2 text-primary hover:text-primary/90 transition-colors cursor-pointer"
-              >
-                <div className="text-2xl">
-                  {logo}
-                </div>
-                <span className="hidden font-bold text-xl sm:inline-block">Company</span>
-              </button>
+              
+                <Link to={logoHref}
+                  className="flex items-center space-x-2 text-primary hover:text-primary/90 transition-colors cursor-pointer"
+                >
+                  <div className="text-2xl">
+                    {logo}
+                  </div>
+                  <span className="hidden font-bold text-xl sm:inline-block">Company</span>
+              </Link>
               {/* Navigation menu */}
               {!isMobile && (
                 <NavigationMenu className="flex">
-                <NavigationMenuList className="gap-1">
-                  {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index}>
-                      <button
-                        onClick={(e) => e.preventDefault()}
-                        className={cn(
-                          "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer no-underline",
-                          link.active 
-                            ? "bg-accent text-accent-foreground" 
-                            : "text-foreground/80 hover:text-foreground"
-                        )}
-                      >
-                        {link.label}
-                      </button>
-                    </NavigationMenuItem>
-                  ))}
-                </NavigationMenuList>
+                  <NavigationMenuList className="gap-1">
+                    {navigationLinks.map((link, index) => (
+                      <NavigationMenuItem key={index}>
+                        <Link to={link.href} className={
+                          cn(
+                              "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 no-underline",
+                              link.active
+                                ? "bg-accent text-accent-foreground"
+                                : "text-foreground/80 hover:text-foreground"
+                            )
+                        }>
+                            {link.label}
+                        </Link>
+                      </NavigationMenuItem>
+                    ))}
+                  </NavigationMenuList>
                 </NavigationMenu>
               )}
             </div>
           </div>
           {/* Right side */}
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-              onClick={(e: React.MouseEvent) => {
-                e.preventDefault();
-                if (onSignInClick) onSignInClick();
-              }}
-            >
-              {signInText}
-            </Button>
-            <Button
-              size="sm"
-              className="text-sm font-medium px-4 h-9 rounded-md shadow-sm"
-              onClick={(e: React.MouseEvent) => {
-                e.preventDefault();
-                if (onCtaClick) onCtaClick();
-              }}
-            >
-              {ctaText}
-            </Button>
+            <Link to={signInHref}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-sm font-medium hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                onClick={() => {
+                  if (onSignInClick) onSignInClick();
+                }}
+              >
+                {signInText}
+              </Button>
+            </Link>
+            <Link to={ctaHref}>
+              <Button
+                size="sm"
+                className="text-sm font-medium px-4 h-9 rounded-md shadow-sm cursor-pointer"
+                onClick={() => {
+                  if (onCtaClick) onCtaClick();
+                }}
+              >
+                {ctaText}
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
