@@ -1,7 +1,10 @@
 package com.skillstorm.backend.Models;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "room_types")
 public class RoomType {
-    private int typeId;
+    private long typeId;
     private String name;
     private String description;
     private int nightlyPrice;

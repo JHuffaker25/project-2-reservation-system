@@ -1,7 +1,10 @@
 package com.skillstorm.backend.Models;
 
-public class User {
-	private int userId;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "users")
+public class AppUser {
+	private long userId;
 	private String email;
 	private String password;
 	private Boolean role;
