@@ -1,0 +1,4 @@
+#spring:
+    #mongodb:
+        #uri: mongodb+srv://${MONGODB_USER}:${MONGODB_PASS}@cluster0.lkzo49d.mongodb.net/?appName=Cluster0
+
