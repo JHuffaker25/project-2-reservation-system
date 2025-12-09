@@ -13,17 +13,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     
-        //TEST, REPLACE OR DELETE LATER/////////////////////////////////////////
+        
         http
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/users/hello").permitAll()
-                .requestMatchers("/users/private-info").authenticated()
-            )
-            
-            .httpBasic(Customizer.withDefaults());
+            .authorizeHttpRequests(authorize -> {
+                authorize
+                .anyRequest().authenticated();
+                //.requestMatchers("/users/hello").permitAll()
+                //.requestMatchers("/users/private-info").authenticated()
+            })
+
+            //Tells Spring security to use registered oauth2 login configuration
+            .oauth2Login(Customizer.withDefaults()); 
 
 
         return http.build();
-        //TEST, REPLACE OR DELETE LATER/////////////////////////////////////////
+        
     }
 }

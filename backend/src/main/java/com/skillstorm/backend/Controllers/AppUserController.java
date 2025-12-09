@@ -8,17 +8,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/users")
 public class AppUserController {
     // CRUD endpoints to be implemented
-
-
-    //SPRING SECURITY TESTING ONLY, DELETE THIS/////////////////////////////////////////
-    @GetMapping("/hello")
-    public String hello(){
-        return "Hello User!";
-    }
-
-    @GetMapping("/private-info")
-    public String privateInfo(){
-        return "This is private user information.";
-    }
-    //SPRING SECURITY TESTING ONLY, DELETE THIS/////////////////////////////////////////
 }
