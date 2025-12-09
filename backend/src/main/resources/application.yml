@@ -6,14 +6,11 @@ spring:
         ansi:
             enabled: ALWAYS
 
-    #mongodb:
-    #       uri: mongodb+srv://${MONGODB_USER}:${MONGODB_PASS}@cluster0.lkzo49d.mongodb.net/?appName=Cluster0
-
 
 logging:
     level:
-        org.springframework.data.mongodb: DEBUG
-        com.skillstorm: DEBUG
+        "[org.springframework.data.mongodb]": DEBUG
+        "[com.skillstorm]": DEBUG
 
 
 server: 
