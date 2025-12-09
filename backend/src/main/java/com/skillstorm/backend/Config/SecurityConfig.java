@@ -12,7 +12,8 @@ public class SecurityConfig {
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        
+    
+        //TEST, REPLACE OR DELETE LATER/////////////////////////////////////////
         http
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/users/hello").permitAll()
@@ -23,5 +24,6 @@ public class SecurityConfig {
 
 
         return http.build();
+        //TEST, REPLACE OR DELETE LATER/////////////////////////////////////////
     }
 }
