@@ -1,0 +1,47 @@
+name: Deploy Backend to S3
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn -B package -DskipTests
+
+      - name: List target directory
+        run: ls -la target/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy JAR to S3
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            aws s3 cp target/backend-0.0.1-SNAPSHOT.jar s3://project2-frontend-group1-397345411365-useast1/backend/
+          elif [ "${{ github.ref_name }}" = "dev" ]; then
+            aws s3 cp target/backend-0.0.1-SNAPSHOT.jar s3://project2-frontend-group1-dev-397345411365-us-east-1/backend/
+          fi
