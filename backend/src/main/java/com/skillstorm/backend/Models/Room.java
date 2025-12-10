@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "rooms")
 public class Room {
 
+    // Fields
     @Id
     private String id;
 
