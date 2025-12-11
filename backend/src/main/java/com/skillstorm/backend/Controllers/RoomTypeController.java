@@ -5,11 +5,13 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.skillstorm.backend.Models.Room;
 import com.skillstorm.backend.Models.RoomType;
 import com.skillstorm.backend.Services.RoomTypeService;
 
@@ -38,4 +40,21 @@ public class RoomTypeController {
             return ResponseEntity.internalServerError().header("message", e.getMessage()).build();
         }
     }
+
+    // GET room by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<RoomType> findRoomById(@PathVariable String id){
+        try {
+             RoomType roomType = roomTypeService.findRoomById(id);
+            return new ResponseEntity<>(roomType, HttpStatus.OK);
+            
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "There were no room type matches found").body(null);
+
+        }catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
+        }
+    }
+
+    
 }
