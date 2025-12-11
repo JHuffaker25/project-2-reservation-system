@@ -2,7 +2,6 @@ package com.skillstorm.backend.Controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 //THIS CONTROLLER IS FOR TESTING PURPOSES ONLY///////////////////////////////////////////////////
@@ -22,6 +21,5 @@ public class TestController {
         return "This is private user information.";
     }
     
-
 }
 //THIS CONTROLLER IS FOR TESTING PURPOSES ONLY///////////////////////////////////////////////////

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.skillstorm.backend.Models.Room;
 import com.skillstorm.backend.Models.RoomType;
 import com.skillstorm.backend.Services.RoomTypeService;
 
@@ -19,29 +18,25 @@ import com.skillstorm.backend.Services.RoomTypeService;
 @RequestMapping("/room-types")
 public class RoomTypeController {
 
+//Service injection
     private final RoomTypeService roomTypeService;
 
     public RoomTypeController(RoomTypeService roomTypeService) {
         this.roomTypeService = roomTypeService;
     }
 
-    @GetMapping
+
+    
+//GET MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //GET all room types
+    @GetMapping("/all")
     public ResponseEntity<List<RoomType>> getAllRoomTypes() {
         List<RoomType> roomTypes = roomTypeService.getAllRoomTypes();
         return ResponseEntity.ok(roomTypes);
     }
 
-    @PostMapping
-    public ResponseEntity<RoomType> createRoomType(@RequestBody RoomType roomType) {
-        try {
-            RoomType savedRoomType = roomTypeService.createRoomType(roomType);
-            return new ResponseEntity<>(savedRoomType, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().header("message", e.getMessage()).build();
-        }
-    }
-
-    // GET room by ID
+    //GET room type by ID
     @GetMapping("/{id}")
     public ResponseEntity<RoomType> findRoomById(@PathVariable String id){
         try {
@@ -56,5 +51,19 @@ public class RoomTypeController {
         }
     }
 
+
+
+//POST MAPPINGS///////////////////////////////////////////////////////////////////////////////////////////
+
+    //Create new room type
+    @PostMapping
+    public ResponseEntity<RoomType> createRoomType(@RequestBody RoomType roomType) {
+        try {
+            RoomType savedRoomType = roomTypeService.createRoomType(roomType);
+            return new ResponseEntity<>(savedRoomType, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("message", e.getMessage()).build();
+        }
+    }
     
 }

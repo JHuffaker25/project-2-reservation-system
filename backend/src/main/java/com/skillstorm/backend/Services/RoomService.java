@@ -9,7 +9,7 @@ import java.util.List;
 @Service
 public class RoomService {
 
-    // Constructor injection of RoomRepository
+//Repo injection
     private final RoomRepository roomRepository;
 
     public RoomService(RoomRepository roomRepository) {
@@ -17,7 +17,15 @@ public class RoomService {
     }
 
 
-    // GET method to find room by ID
+    
+//GET METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //GET all rooms
+    public List<Room> getAllRooms() {
+        return roomRepository.findAll();
+    }
+
+    //GET room by ID
     public List<Room> findRoomById(String id) {
         Room room = roomRepository.findById(id).orElse(null);
 

@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 
@@ -18,16 +17,26 @@ import java.util.List;
 @RequestMapping("/rooms")
 public class RoomController {
 
-private final RoomService roomService;
+//Service injection
+    private final RoomService roomService;
 
      public RoomController(RoomService roomService){
         this.roomService = roomService;
     }
     
-    //GET MAPPINGS//
+    
+
+//GET MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //GET all rooms
+	@GetMapping ("/all")
+    public ResponseEntity<List<Room>> getAllRooms() {
+        List<Room> rooms = roomService.getAllRooms();
+        return ResponseEntity.ok(rooms);
+    }
 
     // GET room by ID
-    @GetMapping("/room/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<List<Room>> findRoomById(@PathVariable String id){
         try {
             List <Room> rooms = roomService.findRoomById(id);
