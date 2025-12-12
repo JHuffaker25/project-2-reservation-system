@@ -21,7 +21,7 @@ public class Room {
 
     private List<LocalDate> datesReserved;
 
-    // Constructors
+    //Constructors
     public Room() {}
 
     public Room(Integer roomNumber, String typeId, String status, List<LocalDate> datesReserved) {
@@ -31,7 +31,7 @@ public class Room {
         this.datesReserved = datesReserved;
     }
 
-    // Getters and Setters
+    //Getters and Setters
     public String getId() {
         return id;
     }

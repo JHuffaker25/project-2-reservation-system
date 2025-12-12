@@ -10,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import java.time.LocalDate;
+import java.util.stream.Collectors;
 import java.util.List;
 
 
@@ -35,7 +38,7 @@ public class RoomController {
         return ResponseEntity.ok(rooms);
     }
 
-    // GET room by ID
+    //GET room by ID
     @GetMapping("/{id}")
     public ResponseEntity<List<Room>> findRoomById(@PathVariable String id){
         try {
@@ -47,6 +50,23 @@ public class RoomController {
 
         }catch (Exception e) {
             return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
+        }
+    }
+
+    //GET available rooms by dates, with optional typeId as path variable (/{typeId}/available)
+    @GetMapping({"/available", "/{typeId}/available"})
+    public ResponseEntity<List<Room>> getAvailableRooms(
+            @RequestParam List<String> dates,
+            @PathVariable(required = false) String typeId) {
+        try {
+            //Parse date strings to LocalDate
+            List<LocalDate> requestedDates = dates.stream()
+                    .map(LocalDate::parse)
+                    .collect(Collectors.toList());
+            List<Room> availableRooms = roomService.findAvailableRooms(requestedDates, typeId);
+            return ResponseEntity.ok(availableRooms);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().header("Error", "Invalid request: " + e.getMessage()).body(null);
         }
     }
 }

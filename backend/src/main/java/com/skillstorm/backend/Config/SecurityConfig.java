@@ -25,13 +25,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> {
                 authorize
                 
-                //.requestMatchers("/users/hello").permitAll()
-                //.requestMatchers("/users/private-info").authenticated()
-
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                 .requestMatchers("/room-types/**").permitAll()
                 
-                .anyRequest().authenticated();
+                .anyRequest().permitAll(); // TEMPORARILY allow all requests with no auth, to be changed later
+                
+                /*TESTING FOR AUTHENTICATION RULES
+                .requestMatchers("/tests/hello").permitAll()
+                .requestMatchers("/tests/private-info").authenticated()*/
             })
 
             //Tells Spring security to use registered oauth2 login configuration
