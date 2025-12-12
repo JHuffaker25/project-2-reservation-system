@@ -19,6 +19,14 @@ public class RoomService {
     }
 
 
+// POST and DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Create a new room (all fields required)
+    
+
+    
+
+
     
 //GET METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,5 +68,30 @@ public class RoomService {
                     return true;
                 })
                 .collect(Collectors.toList());
+    }
+
+
+
+//POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //CREATE new room
+    public Room createRoom(Room room) {
+        // Validate all required fields
+        if (room.getRoomNumber() == null || room.getTypeId() == null || room.getStatus() == null || room.getDatesReserved() == null) {
+            throw new IllegalArgumentException("Missing required fields: roomNumber, typeId, status, datesReserved");
+        }
+        return roomRepository.save(room);
+    }
+
+
+
+//DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Delete a room by ID
+    public void deleteRoom(String id) {
+        if (!roomRepository.existsById(id)) {
+            throw new IllegalArgumentException("Room with id " + id + " does not exist");
+        }
+        roomRepository.deleteById(id);
     }
 }

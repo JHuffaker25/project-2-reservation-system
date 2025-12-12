@@ -11,7 +11,7 @@ public class AppUser {
 
 	private String email;
 
-	private String password;
+	private String password; //THIS SHOULD BE HASHED BEFORE STORING, WILL UPDATE LATER
 
 	private String role;
 

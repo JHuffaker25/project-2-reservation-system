@@ -12,12 +12,15 @@ public class Reservation {
     @Id
     private String id;
 
-    private String resNumber;
+    private String resNumber; //PROBABLY REMOVE THIS LATER
     
     private String userId;
 
     private String roomId;
     
+    //PROBABLY ADD THIS IN LATER, REMOVE IF NOT NEEDED
+    //private String transactionId;
+
     private LocalDate checkIn;
 
     private LocalDate checkOut;

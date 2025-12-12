@@ -25,4 +25,32 @@ public class AppUserService {
     public List<AppUser> getAllUsers() {
         return appUserRepository.findAll();
     }
+
+
+//POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //CREATE new user
+    public AppUser createUser(AppUser user) {
+        // Validate all required fields
+        if (user.getEmail() == null || user.getPassword() == null || user.getRole() == null ||
+            user.getFirstName() == null || user.getLastName() == null || user.getPhone() == null) {
+            throw new IllegalArgumentException("Missing required fields: email, password, role, firstName, lastName, phone");
+        }
+        
+        //WILL NEED TO HASH PASSWORD HERE BEFORE SAVING TO DB AND MODEL
+
+        return appUserRepository.save(user);
+    }
+
+
+    
+//DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Delete a user by ID
+    public void deleteUser(String id) {
+        if (!appUserRepository.existsById(id)) {
+            throw new IllegalArgumentException("User with id " + id + " does not exist");
+        }
+        appUserRepository.deleteById(id);
+    }
 }

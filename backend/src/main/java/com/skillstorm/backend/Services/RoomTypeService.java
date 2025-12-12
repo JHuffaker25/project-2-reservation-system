@@ -40,10 +40,27 @@ public class RoomTypeService {
 
 
 
-//POST METHODS///////////////////////////////////////////////////////////////////////////////////////////
+//POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
-    //POST new room type
+    //CREATE new room type
     public RoomType createRoomType(RoomType roomType) {
+        // Validate all required fields from the RoomType model
+        if (roomType.getName() == null || roomType.getPricePerNight() == null ||
+            roomType.getMaxGuests() == null || roomType.getSquareFootage() == null) {
+            throw new IllegalArgumentException("Missing required fields: name, pricePerNight, maxGuests, squareFootage");
+        }
         return roomTypeRepository.save(roomType);
+    }
+
+
+
+//DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Delete a room type by ID
+    public void deleteRoomType(String id) {
+        if (!roomTypeRepository.existsById(id)) {
+            throw new IllegalArgumentException("Room type with id " + id + " does not exist");
+        }
+        roomTypeRepository.deleteById(id);
     }
 }

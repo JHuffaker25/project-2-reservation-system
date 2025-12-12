@@ -12,6 +12,9 @@ public class Transaction {
     @Id
     private String id;
 
+    //PROBABLY ADD THIS IN LATER, REMOVE IF NOT NEEDED
+    //private String userId;
+
     private String paymentIntentId;
 
     private String transactionStatus;

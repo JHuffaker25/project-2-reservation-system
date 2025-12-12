@@ -2,8 +2,13 @@ package com.skillstorm.backend.Controllers;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,12 +21,14 @@ import com.skillstorm.backend.Services.ReservationService;
     @RequestMapping("/reservations")
     public class ReservationController {
         
+        
 //Service injection
 	private final ReservationService reservationService;
 
 	public ReservationController(ReservationService reservationService) {
 		this.reservationService = reservationService;
 	}
+
 
 	
 //GET MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,5 +38,39 @@ import com.skillstorm.backend.Services.ReservationService;
     public ResponseEntity<List<Reservation>> getAllReservations() {
         List<Reservation> reservations = reservationService.getAllReservations();
         return ResponseEntity.ok(reservations);
+    }
+
+
+
+//POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
+
+    //CREATE new reservation (Required fields: resNumber, userId, roomId, checkIn, checkOut, numGuests, status, totalPrice)
+    @PostMapping("/new")
+    public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation) {
+         try {
+            Reservation createdReservation = reservationService.createReservation(reservation);
+            return new ResponseEntity<>(createdReservation, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+             return ResponseEntity.badRequest().header("Error", "Invalid reservation data: " + e.getMessage()).body(null);
+         } catch (Exception e) {
+               return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
+        }
+            }
+
+
+
+//DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //DELETE reservation by ID
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteReservation(@PathVariable String id) {
+        try {
+            reservationService.deleteReservation(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+             return ResponseEntity.badRequest().header("Error", "Reservation not found: " + e.getMessage()).build();
+        } catch (Exception e) {
+           return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+        }
     }
 }

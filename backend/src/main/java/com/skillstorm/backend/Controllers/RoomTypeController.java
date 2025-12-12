@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,14 +56,33 @@ public class RoomTypeController {
 
 //POST MAPPINGS///////////////////////////////////////////////////////////////////////////////////////////
 
-    //Create new room type
+    //Create new room type (Required fields: name, pricePerNight, maxGuests, squareFootage)
     @PostMapping
     public ResponseEntity<RoomType> createRoomType(@RequestBody RoomType roomType) {
         try {
             RoomType savedRoomType = roomTypeService.createRoomType(roomType);
             return new ResponseEntity<>(savedRoomType, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Invalid room type data: " + e.getMessage()).body(null);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().header("message", e.getMessage()).build();
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
+        }
+    }
+
+
+
+//DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //DELETE room type by ID
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteRoomType(@PathVariable String id) {
+        try {
+            roomTypeService.deleteRoomType(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Room type not found: " + e.getMessage()).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
     }
     

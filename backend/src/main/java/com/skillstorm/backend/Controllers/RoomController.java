@@ -11,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import java.time.LocalDate;
 import java.util.stream.Collectors;
 import java.util.List;
@@ -26,6 +29,8 @@ public class RoomController {
      public RoomController(RoomService roomService){
         this.roomService = roomService;
     }
+
+
     
     
 
@@ -69,5 +74,41 @@ public class RoomController {
             return ResponseEntity.badRequest().header("Error", "Invalid request: " + e.getMessage()).body(null);
         }
     }
+
+
+
+//POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
+
+    //CREATE new room (Fields required: roomNumber, typeId, status, datesReserved)
+    @PostMapping("/new")
+    public ResponseEntity<Room> createRoom(@RequestBody Room room) {
+        try {
+            Room createdRoom = roomService.createRoom(room);
+            return new ResponseEntity<>(createdRoom, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Invalid room data: " + e.getMessage()).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
+        }
+    }
+
+
+
+//DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //DELETE room by ID
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteRoom(@PathVariable String id) {
+        try {
+            roomService.deleteRoom(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Room not found: " + e.getMessage()).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+        }
+    }
+
+    
 }
     
