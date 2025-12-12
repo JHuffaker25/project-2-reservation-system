@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -89,31 +90,32 @@ export interface Props extends React.HTMLAttributes<HTMLElement> {
   onCtaClick?: () => void;
 }
 
-// // Default navigation links
-// const defaultNavigationLinks: NavLink[] = [
-//   { href: '#', label: 'Home', active: false },
-//   { href: '#features', label: 'Features' },
-//   { href: '#pricing', label: 'Pricing' },
-//   { href: '#about', label: 'About' },
-// ];
+const getNavLinksByRole = (): NavLink[] => {
 
-// // Admin links
-// const adminNavigationLinks: NavLink[] = [
-//   { href: '#', label: 'Rooms' },
-//   { href: '#', label: 'Reservations' },
-//   { href: '#', label: 'Transactions' },
-// ];
-
-// Test links
-const testNavigationLinks: NavLink[] = [
-  { href: '/', label: 'Home' },
-  { href: '/rooms', label: 'Rooms' },
-  { href: '/reservations', label: 'Reservations' },
-  { href: '/transactions', label: 'Transactions' },
-  { href: '/manage-reservations', label: 'Manage Reservations' },
-  { href: '/manage-rooms', label: 'Manage Rooms' },
-  { href: '/profile', label: 'Profile' },
-];
+    const auth = useAppSelector(state => state.auth);
+    const role = auth.user?.role || 'guest';
+    
+    switch (role) {
+        case 'admin':
+            return [
+                { href: '/manage-reservations', label: 'Manage Reservations' },
+                { href: '/update-rooms', label: 'Update Rooms' },
+                { href: '/view-transactions', label: 'View Transactions' },
+            ];
+        case 'user':
+            return [
+                { href: '/', label: 'Home' },
+                { href: '/rooms', label: 'Browse Rooms' },
+                { href: '/reservations', label: 'View Reservations' },
+                { href: '/profile', label: 'Profile' },
+            ];
+        default:
+            return [
+                { href: '/', label: 'Home' },
+                { href: '/rooms', label: 'Browse Rooms' },
+            ];
+    }
+}
 
 export const Navbar = React.forwardRef<HTMLElement, Props>(
   (
@@ -121,7 +123,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
       className,
       logo = <Logo />,
       logoHref = '/',
-      navigationLinks = testNavigationLinks,
+      navigationLinks = getNavLinksByRole(),
       signInText = 'Sign In',
       signInHref = '/signin',
       ctaText = 'Book Now',
