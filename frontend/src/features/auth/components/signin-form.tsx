@@ -20,6 +20,7 @@ export function SigninForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+    const googleLoginUri = import.meta.env.VITE_GOOGLE_LOGIN_URI;
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
@@ -56,11 +57,11 @@ export function SigninForm({
                 </Field>
                 <Field>
                     <Button type="submit">Sign in</Button>
-                    <Button variant="outline" type="button">
-                    Sign in with Google
+                    <Button variant="outline" type="button" onClick={() => window.location.href = googleLoginUri}>
+                        Sign in with Google
                     </Button>
                     <FieldDescription className="text-center">
-                    Don&apos;t have an account? <Link to='/signup'>Sign up</Link>
+                    Don't have an account? <Link to='/signup'>Sign up</Link>
                     </FieldDescription>
                 </Field>
                 </FieldGroup>
