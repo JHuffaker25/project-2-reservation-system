@@ -4,13 +4,43 @@ import Signin from './pages/Signin'
 import Signup from './pages/Signup'
 import Rooms from './pages/Rooms'
 import Reservations from './pages/Reservations'
-import Transactions from './pages/Transactions'
+import ViewTransactions from './pages/ViewTransactions'
 import LandingPage from './pages/LandingPage'
 import Profile from './pages/Profile'
 import ManageReservations from './pages/ManageReservations'
-import ManageRooms from './pages/ManageRooms'
+import UpdateRooms from './pages/UpdateRooms'
+import RoomDetails from './pages/RoomDetails'
+import { ProtectedLayout } from './components/protected-layout'
+import { useEffect } from 'react'
+import { useAppDispatch } from './app/hooks'
+import { loginSuccess, startAuth } from './features/auth/authSlice'
 
 function App() {
+
+    const dispatch = useAppDispatch();
+
+    const fakeUser = {
+        id: "1",
+        email: "test@test.com",
+        name: "Test User",
+        role: "guest",
+        preferences: {
+            emailNotifications: true,
+            darkMode: false,
+        }
+    };
+
+    useEffect(() => {
+        dispatch(startAuth());
+
+        // const timeout = setTimeout(() => {
+            //  dispatch(loginSuccess(fakeUser));
+            // dispatch(setAuthResolved());
+        // }, 500);
+
+        dispatch(loginSuccess(fakeUser))
+        // return () => clearTimeout(timeout);
+    }, [dispatch]);
 
     return (
         <Routes>
@@ -19,12 +49,21 @@ function App() {
                 <Route path="/signin" element={<Signin />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/rooms" element={<Rooms />} />
+                <Route path="/rooms/:id/book" element={<RoomDetails />} />
+            </Route>
+
+            <Route element={<ProtectedLayout requires="user" />}>
                 <Route path="/reservations" element={<Reservations />} />
-                <Route path="/transactions" element={<Transactions />} />
-                <Route path="/manage-reservations" element={<ManageReservations />} />
-                <Route path="/manage-rooms" element={<ManageRooms />} />
                 <Route path="/profile" element={<Profile />} />
             </Route>
+
+            <Route element={<ProtectedLayout requires="admin" />}>
+                <Route path="/view-transactions" element={<ViewTransactions />} />
+                <Route path="/manage-reservations" element={<ManageReservations />} />
+                <Route path="/update-rooms" element={<UpdateRooms />} />
+            </Route>
+
+            <Route path="*" element={<h1>404 Not Found</h1>} />
         </Routes>
     )
 }

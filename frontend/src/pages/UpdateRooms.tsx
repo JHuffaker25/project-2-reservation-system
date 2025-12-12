@@ -375,7 +375,7 @@ const AddEditRoomModal = ({ open, room, onClose, onSave, roomTypes }: {
 
 // Main ManageRooms page
 const PAGE_SIZE = 5;
-const ManageRooms: React.FC = () => {
+const UpdateRooms: React.FC = () => {
   const [rooms, setRooms] = useState(dummyRooms);
   const [roomTypes, setRoomTypes] = useState(dummyRoomTypes);
   const [search, setSearch] = useState('');
@@ -538,4 +538,4 @@ const ManageRooms: React.FC = () => {
   );
 };
 
-export default ManageRooms;
+export default UpdateRooms;

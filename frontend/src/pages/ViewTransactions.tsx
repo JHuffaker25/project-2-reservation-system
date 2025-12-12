@@ -297,161 +297,9 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Enhanced Calendar Component for date range selection
-const TransactionDateRangeCalendar = ({
-  startDate,
-  endDate,
-  onStartDateChange,
-  onEndDateChange,
-}: {
-  startDate: Date | null;
-  endDate: Date | null;
-  onStartDateChange: (date: Date) => void;
-  onEndDateChange: (date: Date) => void;
-}) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+import DateRangeCalendar from '@/components/date-range-calendar';
 
-  const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
-
-  const isDateInRange = (date: Date): boolean => {
-    if (!startDate || !endDate) return false;
-    return date > startDate && date < endDate;
-  };
-
-  const isStartDate = (date: Date): boolean => {
-    return startDate ? date.toDateString() === startDate.toDateString() : false;
-  };
-
-  const isEndDate = (date: Date): boolean => {
-    return endDate ? date.toDateString() === endDate.toDateString() : false;
-  };
-
-  const handleDateClick = (date: Date) => {
-    if (!startDate) {
-      onStartDateChange(date);
-    } else if (!endDate) {
-      if (date > startDate) {
-        onEndDateChange(date);
-      } else {
-        onStartDateChange(date);
-      }
-    } else {
-      onStartDateChange(date);
-      onEndDateChange(null as any);
-    }
-  };
-
-  const days: (Date | null)[] = [];
-  const daysInMonth = getDaysInMonth(currentMonth);
-  const firstDay = getFirstDayOfMonth(currentMonth);
-
-  for (let i = 0; i < firstDay; i++) {
-    days.push(null);
-  }
-
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i));
-  }
-
-  const monthYear = currentMonth.toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
-
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
-  };
-
-  return (
-    <div className="w-full space-y-4">
-      <div className="flex items-center justify-between mb-6">
-        <button
-          onClick={handlePrevMonth}
-          className="p-2 hover:bg-muted rounded-md transition-colors cursor-pointer"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <p className="font-semibold text-lg">{monthYear}</p>
-        <button
-          onClick={handleNextMonth}
-          className="p-2 hover:bg-muted rounded-md transition-colors cursor-pointer"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-7 gap-2 mb-3">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-          <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-2">
-            {day}
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-2">
-        {days.map((day, idx) => {
-          const isDisabled = !day;
-          const isInRange = day && isDateInRange(day);
-          const isStart = day && isStartDate(day);
-          const isEnd = day && isEndDate(day);
-
-          return (
-            <button
-              key={idx}
-              onClick={() => day && !isDisabled && handleDateClick(day)}
-              disabled={isDisabled}
-              className={`py-2 px-1 text-sm rounded-md cursor-pointer transition-all ${
-                isDisabled
-                  ? 'text-muted-foreground opacity-50 cursor-not-allowed'
-                  : isStart || isEnd
-                    ? 'bg-primary text-white font-semibold hover:bg-primary/90'
-                    : isInRange
-                      ? 'bg-primary/20 text-foreground hover:bg-primary/30'
-                      : 'hover:bg-muted text-foreground'
-              }`}
-            >
-              {day?.getDate()}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Date Range Display */}
-      {(startDate || endDate) && (
-        <div className="mt-4 pt-4 border-t space-y-2">
-          <div className="text-sm">
-            <span className="text-muted-foreground">Start: </span>
-            <span className="font-semibold">{startDate ? startDate.toLocaleDateString() : 'Not selected'}</span>
-          </div>
-          <div className="text-sm">
-            <span className="text-muted-foreground">End: </span>
-            <span className="font-semibold">{endDate ? endDate.toLocaleDateString() : 'Not selected'}</span>
-          </div>
-          {startDate && endDate && (
-            <div className="text-sm pt-2 border-t">
-              <span className="text-muted-foreground">Range: </span>
-              <span className="font-semibold">
-                {Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} days
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Improved date range picker with Popover
 const DateRangePicker = ({
   onApply,
   startDate,
@@ -480,7 +328,7 @@ const DateRangePicker = ({
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
         <div className="p-4">
-          <TransactionDateRangeCalendar
+          <DateRangeCalendar
             startDate={tempStartDate}
             endDate={tempEndDate}
             onStartDateChange={setTempStartDate}
@@ -690,7 +538,7 @@ const TransactionDetailsSheet = ({
 };
 
 // Main Transactions Page
-export default function Transactions() {
+export default function ViewTransactions() {
   const [transactions] = useState(mockTransactions);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -758,7 +606,7 @@ export default function Transactions() {
       {/* Page Header */}
       <div className="py-12 px-4 md:px-6 lg:px-8 border-b">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">Transactions</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">View Transactions</h1>
           <p className="text-lg text-muted-foreground">
             Manage and monitor all financial transactions, payments, and refunds.
           </p>
