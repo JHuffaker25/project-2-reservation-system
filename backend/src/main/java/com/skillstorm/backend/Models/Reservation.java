@@ -31,11 +31,15 @@ public class Reservation {
 
     private BigDecimal totalPrice;
 
+    private String paymentIntentId; // Stripe payment tracking
+
     // Constructors
     public Reservation() {}
 
     public Reservation(String resNumber, String userId, String roomId, LocalDate checkIn, 
-                       LocalDate checkOut, Integer numGuests, String status, BigDecimal totalPrice) {
+                       LocalDate checkOut, Integer numGuests, String status, BigDecimal totalPrice,
+                       String paymentIntentId) {
+        
         this.resNumber = resNumber;
         this.userId = userId;
         this.roomId = roomId;
@@ -44,6 +48,7 @@ public class Reservation {
         this.numGuests = numGuests;
         this.status = status;
         this.totalPrice = totalPrice;
+        this.paymentIntentId = paymentIntentId;
     }
 
     // Getters and Setters
@@ -118,4 +123,14 @@ public class Reservation {
     public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }
+
+    public String getPaymentIntentId() {
+       return paymentIntentId;
+    }
+    
+    public void setPaymentIntentId(String paymentIntentId) {
+        this.paymentIntentId = paymentIntentId;
+    }
+
+   
 }

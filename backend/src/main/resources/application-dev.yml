@@ -1,6 +1,11 @@
 spring:
-    mongodb:
-        uri: mongodb+srv://${MONGODB_USER}:${MONGODB_PASS}@cluster0.lkzo49d.mongodb.net/?appName=Cluster0
-        database: Hotel
+  mongodb:
+    uri: ${MONGO_URI}
 
-FRONTEND_URL: http://localhost:5173
+frontend:
+  url: http://localhost:5173
+
+# Stripe API Keys
+stripe:
+  public-key: ${STRIPE_PUBLIC_KEY}
+  private-key: ${STRIPE_SECRET_KEY}

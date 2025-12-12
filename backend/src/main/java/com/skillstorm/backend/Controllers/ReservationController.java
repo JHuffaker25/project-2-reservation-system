@@ -4,45 +4,89 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import com.skillstorm.backend.DTOs.CreateReservationRequest;
 import com.skillstorm.backend.Models.Reservation;
-
 import com.skillstorm.backend.Services.ReservationService;
+import com.stripe.exception.StripeException;
 
-    @RestController
-    @RequestMapping("/reservations")
-    public class ReservationController {
-        
-        
-//Service injection
-	private final ReservationService reservationService;
+@RestController
+@RequestMapping("/reservations")
+public class ReservationController {
 
-	public ReservationController(ReservationService reservationService) {
-		this.reservationService = reservationService;
-	}
+    private final ReservationService reservationService;
 
+    public ReservationController(ReservationService reservationService) {
+        this.reservationService = reservationService;
+    }
 
-	
 //GET MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
-	//GET all reservations
-	@GetMapping ("/all")
+    @GetMapping("/all")
     public ResponseEntity<List<Reservation>> getAllReservations() {
         List<Reservation> reservations = reservationService.getAllReservations();
         return ResponseEntity.ok(reservations);
     }
 
+//POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Create reservation with payment authorization (holds funds)
+    @PostMapping
+    public ResponseEntity<?> createReservation(@RequestBody CreateReservationRequest request) {
+        try {
+            Reservation createdReservation = reservationService.createReservation(request);
+            return new ResponseEntity<>(createdReservation, HttpStatus.CREATED);
+        } catch (StripeException e) {
+            return ResponseEntity.badRequest().body("Payment error: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error creating reservation: " + e.getMessage());
+        }
+    }
+
+//PUT MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Check-in: captures the held payment
+    @PutMapping("/{id}/check-in")
+    public ResponseEntity<?> checkIn(@PathVariable String id) {
+        try {
+            Reservation reservation = reservationService.checkIn(id);
+            return ResponseEntity.ok(reservation);
+        } catch (StripeException e) {
+            return ResponseEntity.badRequest().body("Payment capture error: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error during check-in: " + e.getMessage());
+        }
+    }
+
+    // Cancel: releases the held payment
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelReservation(@PathVariable String id) {
+        try {
+            Reservation reservation = reservationService.cancelReservation(id);
+            return ResponseEntity.ok(reservation);
+        } catch (StripeException e) {
+            return ResponseEntity.badRequest().body("Payment cancellation error: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error cancelling reservation: " + e.getMessage());
+        }
+    }
+}
 
 
-//POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
+/*POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
 
     //CREATE new reservation (Required fields: resNumber, userId, roomId, checkIn, checkOut, numGuests, status, totalPrice)
     @PostMapping("/new")
@@ -73,4 +117,4 @@ import com.skillstorm.backend.Services.ReservationService;
            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
     }
-}
+} */
