@@ -11,8 +11,6 @@ public class Reservation {
    
     @Id
     private String id;
-
-    private String resNumber; //PROBABLY REMOVE THIS LATER
     
     private String userId;
 
@@ -36,11 +34,10 @@ public class Reservation {
     // Constructors
     public Reservation() {}
 
-    public Reservation(String resNumber, String userId, String roomId, LocalDate checkIn, 
+    public Reservation(String userId, String roomId, LocalDate checkIn, 
                        LocalDate checkOut, Integer numGuests, String status, BigDecimal totalPrice,
                        String paymentIntentId) {
         
-        this.resNumber = resNumber;
         this.userId = userId;
         this.roomId = roomId;
         this.checkIn = checkIn;
@@ -58,14 +55,6 @@ public class Reservation {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getResNumber() {
-        return resNumber;
-    }
-
-    public void setResNumber(String resNumber) {
-        this.resNumber = resNumber;
     }
 
     public String getUserId() {

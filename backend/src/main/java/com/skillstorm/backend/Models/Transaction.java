@@ -1,6 +1,5 @@
 package com.skillstorm.backend.Models;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
@@ -12,14 +11,19 @@ public class Transaction {
     @Id
     private String id;
 
-    //PROBABLY ADD THIS IN LATER, REMOVE IF NOT NEEDED
-    //private String userId;
+    //added recently, may delete later 
+    private String userId;
+
+    /*adding this will make lookups more optimal, but transaction - reservation are alrady linked through 
+        paymentIntentId. Possibly delete later.
+    */
+    private String reservationId;
 
     private String paymentIntentId;
 
     private String transactionStatus;
 
-    private BigDecimal amount;
+    private Long amount;
 
     private String currency;
 
@@ -27,11 +31,16 @@ public class Transaction {
     
     private LocalDateTime capturedAt;
 
+    //added recently, may delete later 
+    private LocalDateTime cancelledAt;
+
     // Constructors
     public Transaction() {}
 
-    public Transaction(String paymentIntentId, String transactionStatus, BigDecimal amount, 
+    public Transaction(String userId, String reservationId, String paymentIntentId, String transactionStatus, Long amount, 
                        String currency, LocalDateTime authorizedAt, LocalDateTime capturedAt) {
+        this.userId = userId;
+        this.reservationId = reservationId;
         this.paymentIntentId = paymentIntentId;
         this.transactionStatus = transactionStatus;
         this.amount = amount;
@@ -47,6 +56,22 @@ public class Transaction {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getReservationId() {
+        return reservationId;
+    }
+
+    public void setReservationId(String reservationId) {
+        this.reservationId = reservationId;
     }
 
     public String getPaymentIntentId() {
@@ -65,11 +90,11 @@ public class Transaction {
         this.transactionStatus = transactionStatus;
     }
 
-    public BigDecimal getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(Long amount) {
         this.amount = amount;
     }
 
@@ -95,5 +120,13 @@ public class Transaction {
 
     public void setCapturedAt(LocalDateTime capturedAt) {
         this.capturedAt = capturedAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
 }

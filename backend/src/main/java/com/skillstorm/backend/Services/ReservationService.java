@@ -1,7 +1,8 @@
 package com.skillstorm.backend.Services;
-
 import java.util.List;
 import java.util.Optional;
+
+import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 
@@ -19,12 +20,13 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final StripeService stripeService;
     private final AppUserRepository appUserRepository;
-
+    private final TransactionService transactionService;
     public ReservationService(ReservationRepository reservationRepository, StripeService stripeService, 
-                              AppUserRepository appUserRepository) {
+                              AppUserRepository appUserRepository, TransactionService transactionService) {
         this.reservationRepository = reservationRepository;
         this.stripeService = stripeService;
         this.appUserRepository = appUserRepository;
+        this.transactionService = transactionService;
     }
 
 //GET METHODS////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +56,7 @@ public class ReservationService {
         reservation.setTotalPrice(request.totalPrice());
 
         // Convert price to cents for Stripe
-        Long amountInCents = request.totalPrice().multiply(new java.math.BigDecimal(100)).longValue();
+        Long amountInCents = request.totalPrice().multiply(BigDecimal.valueOf(100)).longValue();
 
         // Create payment intent (authorizes but doesn't capture)
         PaymentIntent paymentIntent = stripeService.createPaymentIntent(
@@ -67,7 +69,12 @@ public class ReservationService {
         reservation.setPaymentIntentId(paymentIntent.getId());
         reservation.setStatus("PENDING"); // Funds held, awaiting check-in
 
-        return reservationRepository.save(reservation);
+        //Must make a new reservation object to get the id from the reservation (MONGO DB creates an id with the save)
+        Reservation saved = reservationRepository.save(reservation);
+
+        //Create a corresponding transaction with the reservation id
+        transactionService.createTransactionfromPaymentIntent(paymentIntent, saved.getId(), request.userId());
+        return saved;
     }
 
 //PUT METHODS////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,6 +91,9 @@ public class ReservationService {
         stripeService.capturePayment(reservation.getPaymentIntentId());
         reservation.setStatus("CONFIRMED");
 
+        // Update the corresponding transaction to CAPTURED
+        transactionService.captureTransaction(reservation.getPaymentIntentId());
+
         return reservationRepository.save(reservation);
     }
 
@@ -99,17 +109,22 @@ public class ReservationService {
         stripeService.cancelPayment(reservation.getPaymentIntentId());
         reservation.setStatus("CANCELLED");
 
+        //Cancel the corresponding transaction
+        transactionService.cancelTransaction(reservation.getPaymentIntentId());
+
         return reservationRepository.save(reservation);
     }
 
 //DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void deleteReservation(String id) {
-        if (!reservationRepository.existsById(id)) {
-            throw new IllegalArgumentException("Reservation with id " + id + " does not exist");
-        }
-        reservationRepository.deleteById(id);
+/*  Maybe delete this later
+    public void deleteReservation(String reservationId) {
+        Reservation reservation = findReservationOrThrow(reservationId);
+        reservationRepository.deleteById(reservationId);
+        transactionService.cancelTransaction(reservation.getPaymentIntentId());
     }
+
+    */
 
 //HELPER METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -138,13 +153,4 @@ public class ReservationService {
 
 
     
-//DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
-
-    // Delete a reservation by ID
-    public void deleteReservation(String id) {
-        if (!reservationRepository.existsById(id)) {
-            throw new IllegalArgumentException("Reservation with id " + id + " does not exist");
-        }
-        reservationRepository.deleteById(id);
-    }
-} */
+ */
