@@ -41,10 +41,31 @@ public class ReservationService {
     public Reservation createReservation(CreateReservationRequest request) throws StripeException {
         // Get user's Stripe customer ID
         Optional<AppUser> userOpt = appUserRepository.findById(request.userId());
+
+        //Error handling
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
+
         AppUser user = userOpt.get();
+
+        //Check if date order is valid
+        if (request.checkIn().isAfter(request.checkOut())) {
+            throw new IllegalArgumentException("Check-in date must be before check-out date");
+        }
+
+        //Check if numGuests is valid
+        if (request.numGuests() <= 0) {
+            throw new IllegalArgumentException("Number of guests must be greater than 0");
+        }
+
+        //Check that price is valid
+        if(request.totalPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Total price must be greater than 0");
+        }
+
+        //For now, we won't check availability of room or it's existence, but it will need to be implemented.
+
 
         // Map DTO to Reservation entity
         Reservation reservation = new Reservation();
@@ -63,7 +84,8 @@ public class ReservationService {
                 amountInCents,
                 "usd",
                 user.getStripeCustomerId(),
-                request.paymentMethodId());
+                request.paymentMethodId(),
+                user.getEmail());
 
         // Set reservation details
         reservation.setPaymentIntentId(paymentIntent.getId());

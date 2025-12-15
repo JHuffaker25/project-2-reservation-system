@@ -76,13 +76,14 @@ public class StripeService {
 //PAYMENT INTENT OPERATIONS////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create a payment intent with manual capture (holds funds until check-in)
-    public PaymentIntent createPaymentIntent(Long amount, String currency, String customerId, String paymentMethodId)
+    public PaymentIntent createPaymentIntent(Long amount, String currency, String customerId, String paymentMethodId, String email)
             throws StripeException {
         return PaymentIntent.create(PaymentIntentCreateParams.builder()
                 .setAmount(amount)
                 .setCurrency(currency)
                 .setCustomer(customerId)
                 .setPaymentMethod(paymentMethodId)
+                .setReceiptEmail(email)
                 .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.MANUAL)
                 .setAutomaticPaymentMethods(
                         PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
