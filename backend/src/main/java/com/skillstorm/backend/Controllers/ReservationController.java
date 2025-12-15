@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,16 +40,16 @@ public class ReservationController {
 
     // Create reservation with payment authorization (holds funds)
     @PostMapping
-    public ResponseEntity<?> createReservation(@RequestBody CreateReservationRequest request) {
+    public ResponseEntity<Object> createReservation(@RequestBody CreateReservationRequest request) {
         try {
             Reservation createdReservation = reservationService.createReservation(request);
             return new ResponseEntity<>(createdReservation, HttpStatus.CREATED);
         } catch (StripeException e) {
-            return ResponseEntity.badRequest().body("Payment error: " + e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Invalid reservation data: " + e.getMessage()).build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error creating reservation: " + e.getMessage());
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
     }
 
@@ -56,31 +57,46 @@ public class ReservationController {
 
     // Check-in: captures the held payment
     @PutMapping("/{id}/check-in")
-    public ResponseEntity<?> checkIn(@PathVariable String id) {
+    public ResponseEntity<Object> checkIn(@PathVariable String id) {
         try {
             Reservation reservation = reservationService.checkIn(id);
             return ResponseEntity.ok(reservation);
         } catch (StripeException e) {
-            return ResponseEntity.badRequest().body("Payment capture error: " + e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Invalid reservation data: " + e.getMessage()).build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error during check-in: " + e.getMessage());
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
     }
 
     // Cancel: releases the held payment
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelReservation(@PathVariable String id) {
+    public ResponseEntity<Object> cancelReservation(@PathVariable String id) {
         try {
             Reservation reservation = reservationService.cancelReservation(id);
             return ResponseEntity.ok(reservation);
         } catch (StripeException e) {
-            return ResponseEntity.badRequest().body("Payment cancellation error: " + e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Invalid reservation data: " + e.getMessage()).build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error cancelling reservation: " + e.getMessage());
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+        }
+    }
+
+//DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //DELETE reservation by ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReservation(@PathVariable String id) {
+        try {
+            reservationService.cancelReservation(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+             return ResponseEntity.badRequest().header("Error", "Reservation not found: " + e.getMessage()).build();
+        } catch (Exception e) {
+           return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
     }
 }
@@ -103,18 +119,4 @@ public class ReservationController {
 
 
 
-//DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
-
-    //DELETE reservation by ID
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteReservation(@PathVariable String id) {
-        try {
-            reservationService.deleteReservation(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-             return ResponseEntity.badRequest().header("Error", "Reservation not found: " + e.getMessage()).build();
-        } catch (Exception e) {
-           return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
-        }
-    }
-} */
+ */

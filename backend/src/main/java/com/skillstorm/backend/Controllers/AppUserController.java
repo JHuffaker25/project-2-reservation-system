@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,56 +46,75 @@ public class AppUserController {
 
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
+    //To be adjusted to account for authentication
     @PostMapping("/create")
-    public ResponseEntity<?> createUser(@RequestBody AppUser user) {
+    public ResponseEntity<Object> createUser(@RequestBody AppUser user) {
         try {
             AppUser createdUser = appUserService.createUser(user);
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
         } catch (StripeException e) {
-            return ResponseEntity.badRequest().body("Stripe error: " + e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Invalid user data: " + e.getMessage()).build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error creating user: " + e.getMessage());
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
     }
 
     // Attach payment method (frontend uses Stripe.js to create paymentMethodId)
     @PostMapping("/{userId}/payment-methods/{paymentMethodId}")
-    public ResponseEntity<?> addPaymentMethod(@PathVariable String userId, @PathVariable String paymentMethodId) {
+    public ResponseEntity<Object> addPaymentMethod(@PathVariable String userId, @PathVariable String paymentMethodId) {
         try {
             PaymentMethod pm = appUserService.addPaymentMethod(userId, paymentMethodId);
             return new ResponseEntity<>(toPaymentMethodResponse(pm), HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Invalid user data: " + e.getMessage()).build();
         } catch (StripeException e) {
-            return ResponseEntity.badRequest().body("Stripe error: " + e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error adding payment method: " + e.getMessage());
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
     }
 
     // Attach TEST payment method (backend testing only)
     // Use: visa, mastercard, amex, discover, visa_debit
     @PostMapping("/{userId}/payment-methods/test")
-    public ResponseEntity<?> addTestPaymentMethod(
+    public ResponseEntity<Object> addTestPaymentMethod(
             @PathVariable String userId,
             @RequestParam(defaultValue = "visa") String cardType) {
         try {
             PaymentMethod pm = appUserService.addTestPaymentMethod(userId, cardType);
             return new ResponseEntity<>(toPaymentMethodResponse(pm), HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Invalid user data: " + e.getMessage()).build();
         } catch (StripeException e) {
-            return ResponseEntity.badRequest().body("Stripe error: " + e.getMessage());
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error adding test payment method: " + e.getMessage());
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
     }
 
-//HELPER METHODS////////////////////////////////////////////////////////////////////////////////////////////
+//DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+	//DELETE user by ID
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+		try {
+			appUserService.deleteUser(id);
+			return ResponseEntity.noContent().build();
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().header("Error", "User not found: " + e.getMessage()).build();
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+		}
+	}
+
+
+//HELPER METHOD
 
     // Convert Stripe PaymentMethod to serializable Map
+    // Stripe API response is not serializable, so we need to convert it to a Map
+    // link to documentation: https://stripe.com/docs/api/payment_methods/object
     private Map<String, Object> toPaymentMethodResponse(PaymentMethod pm) {
         Map<String, Object> response = new HashMap<>();
         response.put("paymentMethodId", pm.getId());
@@ -115,6 +135,7 @@ public class AppUserController {
 }
 
 
+
 /*
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
 
@@ -130,20 +151,4 @@ public class AppUserController {
 			return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
 		}
 	}
-
-
-
-//DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
-
-	//DELETE user by ID
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-		try {
-			appUserService.deleteUser(id);
-			return ResponseEntity.noContent().build();
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.badRequest().header("Error", "User not found: " + e.getMessage()).build();
-		} catch (Exception e) {
-			return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
-		}
-	} */
+ */
