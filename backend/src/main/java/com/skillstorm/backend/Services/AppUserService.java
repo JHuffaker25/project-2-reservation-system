@@ -28,11 +28,17 @@ public class AppUserService {
         return appUserRepository.findAll();
     }
 
+    public List<PaymentMethod> getPaymentMethods(String userId) throws StripeException {
+        AppUser user = findUserOrThrow(userId);
+        return stripeService.listPaymentMethods(user.getStripeCustomerId());
+    }
+
 //POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create user and Stripe customer
     public AppUser createUser(AppUser user) throws StripeException {
         // Validate required fields
+        //WARNING: Password will need to be hashed before saving to the database in real implementation
         if (user.getEmail() == null || user.getPassword() == null || user.getRole() == null ||
             user.getFirstName() == null || user.getLastName() == null || user.getPhone() == null) {
             throw new IllegalArgumentException("Missing required fields: email, password, role, firstName, lastName, phone");
@@ -68,6 +74,8 @@ public class AppUserService {
         appUserRepository.deleteById(id);
     }
 
+
+
 //HELPER METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
     private AppUser findUserOrThrow(String userId) {
@@ -77,6 +85,8 @@ public class AppUserService {
         }
         return user.get();
     }
+
+    
 }
 
 
@@ -97,14 +107,5 @@ public class AppUserService {
 
 
     
-//DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Delete a user by ID
-    public void deleteUser(String id) {
-        if (!appUserRepository.existsById(id)) {
-            throw new IllegalArgumentException("User with id " + id + " does not exist");
-        }
-        appUserRepository.deleteById(id);
-    }
-}
  */

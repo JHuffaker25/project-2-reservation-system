@@ -44,6 +44,25 @@ public class AppUserController {
         return ResponseEntity.ok(users);
     }
 
+    //GET payment methods for a user
+    @GetMapping("/{userId}/payment-methods")
+    public ResponseEntity<Object> getPaymentMethods(@PathVariable String userId) {
+        try {
+            //Need to clean up all the garbage and unnecessary output that STRIPE gives and get what we want
+            List<Map<String, Object>> paymentMethods = appUserService.getPaymentMethods(userId)
+                .stream()
+                .map(this::toPaymentMethodResponse)
+                .toList();
+            return new ResponseEntity<>(paymentMethods, HttpStatus.OK);
+        } catch (StripeException e) {
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Invalid user data: " + e.getMessage()).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+        }
+    }
+
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     //To be adjusted to account for authentication
