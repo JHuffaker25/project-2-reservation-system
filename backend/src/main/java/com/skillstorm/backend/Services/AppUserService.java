@@ -74,6 +74,18 @@ public class AppUserService {
         appUserRepository.deleteById(id);
     }
 
+    public void removePaymentMethod(String userId, String paymentMethodId) throws StripeException {
+        AppUser user = findUserOrThrow(userId);
+        
+        // Verify the payment method belongs to this user
+        PaymentMethod pm = PaymentMethod.retrieve(paymentMethodId);
+        if (!user.getStripeCustomerId().equals(pm.getCustomer())) {
+            throw new IllegalArgumentException("Payment method does not belong to this user");
+        }
+        
+        stripeService.detachPaymentMethod(paymentMethodId);
+    }
+
 
 
 //HELPER METHODS////////////////////////////////////////////////////////////////////////////////////////////

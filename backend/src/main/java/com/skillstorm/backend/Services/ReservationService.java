@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
 
 import com.skillstorm.backend.DTOs.CreateReservationRequest;
+import com.skillstorm.backend.DTOs.UpdateReservationRequest;
 import com.skillstorm.backend.Models.AppUser;
 import com.skillstorm.backend.Models.Reservation;
 import com.skillstorm.backend.Repositories.AppUserRepository;
@@ -137,6 +138,35 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
+    //Update reservation (Required fields: id, checkIn, checkOut, numGuests)
+    public Reservation updateReservation(String id, UpdateReservationRequest request) throws StripeException {
+        Reservation reservation = findReservationOrThrow(id);
+
+        if (request.checkIn().isAfter(request.checkOut())) {
+            throw new IllegalArgumentException("Check-in date must be before check-out date");
+        }
+
+        if (request.numGuests() <= 0) {
+            throw new IllegalArgumentException("Number of guests must be greater than 0");
+        }
+
+        //Can only update if reservation is pending
+        if (!"PENDING".equals(reservation.getStatus())) {
+            throw new IllegalArgumentException("Reservation is not pending");
+        }
+
+        //Room availabliity check here
+
+        reservation.setCheckIn(request.checkIn());
+        reservation.setCheckOut(request.checkOut());
+        reservation.setNumGuests(request.numGuests());
+
+        //Update the corresponding transaction to UPDATED
+        transactionService.captureTransaction(reservation.getPaymentIntentId());
+
+        return reservationRepository.save(reservation);
+    }
+
 //DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
 /*  Maybe delete this later
@@ -157,6 +187,7 @@ public class ReservationService {
         }
         return reservationOpt.get();
     }
+
 }
 
 

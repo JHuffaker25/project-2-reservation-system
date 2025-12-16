@@ -128,6 +128,23 @@ public class AppUserController {
 		}
 	}
 
+    //Remove a payment method from a user
+    @DeleteMapping("/{userId}/payment-methods/{paymentMethodId}")
+    public ResponseEntity<Object> removePaymentMethod(
+            @PathVariable String userId, 
+            @PathVariable String paymentMethodId) {
+        try {
+            appUserService.removePaymentMethod(userId, paymentMethodId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", e.getMessage()).build();
+        } catch (StripeException e) {
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+        }
+    }
+
 
 //HELPER METHOD
 

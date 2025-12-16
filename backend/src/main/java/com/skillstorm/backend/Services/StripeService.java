@@ -73,6 +73,12 @@ public class StripeService {
         return PaymentMethod.retrieve(setupIntent.getPaymentMethod());
     }
 
+    //Detach a payment method from a customer
+    public PaymentMethod detachPaymentMethod(String paymentMethodId) throws StripeException {
+        PaymentMethod pm = PaymentMethod.retrieve(paymentMethodId);
+        return pm.detach();
+    }
+
 //PAYMENT INTENT OPERATIONS////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create a payment intent with manual capture (holds funds until check-in)

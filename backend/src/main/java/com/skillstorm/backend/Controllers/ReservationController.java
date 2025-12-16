@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skillstorm.backend.DTOs.CreateReservationRequest;
+import com.skillstorm.backend.DTOs.UpdateReservationRequest;
 import com.skillstorm.backend.Models.Reservation;
 import com.skillstorm.backend.Services.ReservationService;
 import com.stripe.exception.StripeException;
@@ -39,7 +40,7 @@ public class ReservationController {
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create reservation with payment authorization (holds funds)
-    @PostMapping
+    @PostMapping("/new")
     public ResponseEntity<Object> createReservation(@RequestBody CreateReservationRequest request) {
         try {
             Reservation createdReservation = reservationService.createReservation(request);
@@ -85,6 +86,21 @@ public class ReservationController {
         }
     }
 
+    //Update reservation (Required fields: id, checkIn, checkOut, numGuests)
+    @PutMapping("/{id}/update")
+    public ResponseEntity<Object> updateReservation(@PathVariable String id, @RequestBody UpdateReservationRequest request) {
+        try {
+            Reservation reservation = reservationService.updateReservation(id, request);
+            return ResponseEntity.ok(reservation);
+        } catch (StripeException e) {
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Invalid reservation data: " + e.getMessage()).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+        }
+    }
+
 //DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     //DELETE reservation by ID
@@ -100,6 +116,7 @@ public class ReservationController {
         }
     }
 }
+
 
 
 /*POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
