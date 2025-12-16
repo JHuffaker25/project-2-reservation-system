@@ -23,273 +23,18 @@ import {
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 
-// Mock transaction data
-const mockTransactions = [
-  {
-    id: 'TXN001',
-    reservationId: 'RSV67890',
-    guest: 'John Doe',
-    email: 'john@example.com',
-    amount: 249.99,
-    method: 'Credit Card',
-    status: 'Paid',
-    date: new Date(2025, 1, 14),
-    roomType: 'Suite',
-    roomNumber: '305',
-    checkInDate: new Date(2025, 1, 14),
-    checkOutDate: new Date(2025, 1, 17),
-    subtotal: 230.00,
-    tax: 19.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN002',
-    reservationId: 'RSV67891',
-    guest: 'Jane Smith',
-    email: 'jane@example.com',
-    amount: 449.50,
-    method: 'PayPal',
-    status: 'Paid',
-    date: new Date(2025, 1, 13),
-    roomType: 'Deluxe Room',
-    roomNumber: '201',
-    checkInDate: new Date(2025, 1, 15),
-    checkOutDate: new Date(2025, 1, 18),
-    subtotal: 420.00,
-    tax: 29.50,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN003',
-    reservationId: 'RSV67892',
-    guest: 'Michael Johnson',
-    email: 'michael@example.com',
-    amount: 549.99,
-    method: 'Stripe',
-    status: 'Pending',
-    date: new Date(2025, 1, 12),
-    roomType: 'Penthouse',
-    roomNumber: '801',
-    checkInDate: new Date(2025, 1, 20),
-    checkOutDate: new Date(2025, 1, 24),
-    subtotal: 520.00,
-    tax: 29.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN004',
-    reservationId: 'RSV67893',
-    guest: 'Sarah Williams',
-    email: 'sarah@example.com',
-    amount: 179.99,
-    method: 'Credit Card',
-    status: 'Failed',
-    date: new Date(2025, 1, 11),
-    roomType: 'Standard Room',
-    roomNumber: '102',
-    checkInDate: new Date(2025, 2, 1),
-    checkOutDate: new Date(2025, 2, 3),
-    subtotal: 160.00,
-    tax: 19.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN005',
-    reservationId: 'RSV67894',
-    guest: 'Robert Brown',
-    email: 'robert@example.com',
-    amount: 349.99,
-    method: 'PayPal',
-    status: 'Refunded',
-    date: new Date(2025, 1, 10),
-    roomType: 'Family Room',
-    roomNumber: '405',
-    checkInDate: new Date(2025, 2, 5),
-    checkOutDate: new Date(2025, 2, 7),
-    subtotal: 320.00,
-    tax: 29.99,
-    fee: 0,
-    refundHistory: [{ date: new Date(2025, 1, 11), amount: 349.99, reason: 'Guest request' }],
-  },
-  {
-    id: 'TXN006',
-    reservationId: 'RSV67895',
-    guest: 'Emily Davis',
-    email: 'emily@example.com',
-    amount: 629.99,
-    method: 'Credit Card',
-    status: 'Paid',
-    date: new Date(2025, 1, 9),
-    roomType: 'Suite',
-    roomNumber: '304',
-    checkInDate: new Date(2025, 2, 10),
-    checkOutDate: new Date(2025, 2, 14),
-    subtotal: 600.00,
-    tax: 29.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN007',
-    reservationId: 'RSV67896',
-    guest: 'David Martinez',
-    email: 'david@example.com',
-    amount: 299.99,
-    method: 'Stripe',
-    status: 'Paid',
-    date: new Date(2025, 1, 8),
-    roomType: 'Deluxe Room',
-    roomNumber: '202',
-    checkInDate: new Date(2025, 2, 12),
-    checkOutDate: new Date(2025, 2, 15),
-    subtotal: 280.00,
-    tax: 19.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN008',
-    reservationId: 'RSV67897',
-    guest: 'Lisa Anderson',
-    email: 'lisa@example.com',
-    amount: 199.99,
-    method: 'Credit Card',
-    status: 'Pending',
-    date: new Date(2025, 1, 7),
-    roomType: 'Standard Room',
-    roomNumber: '101',
-    checkInDate: new Date(2025, 2, 8),
-    checkOutDate: new Date(2025, 2, 10),
-    subtotal: 180.00,
-    tax: 19.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN009',
-    reservationId: 'RSV67898',
-    guest: 'James Taylor',
-    email: 'james@example.com',
-    amount: 799.99,
-    method: 'PayPal',
-    status: 'Paid',
-    date: new Date(2025, 1, 6),
-    roomType: 'Penthouse',
-    roomNumber: '802',
-    checkInDate: new Date(2025, 3, 1),
-    checkOutDate: new Date(2025, 3, 5),
-    subtotal: 760.00,
-    tax: 39.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN010',
-    reservationId: 'RSV67899',
-    guest: 'Maria Garcia',
-    email: 'maria@example.com',
-    amount: 429.99,
-    method: 'Stripe',
-    status: 'Paid',
-    date: new Date(2025, 1, 5),
-    roomType: 'Deluxe Room',
-    roomNumber: '203',
-    checkInDate: new Date(2025, 3, 3),
-    checkOutDate: new Date(2025, 3, 6),
-    subtotal: 400.00,
-    tax: 29.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN011',
-    reservationId: 'RSV67900',
-    guest: 'Thomas Wilson',
-    email: 'thomas@example.com',
-    amount: 299.99,
-    method: 'Credit Card',
-    status: 'Failed',
-    date: new Date(2025, 1, 4),
-    roomType: 'Family Room',
-    roomNumber: '406',
-    checkInDate: new Date(2025, 3, 10),
-    checkOutDate: new Date(2025, 3, 12),
-    subtotal: 280.00,
-    tax: 19.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN012',
-    reservationId: 'RSV67901',
-    guest: 'Jennifer Lee',
-    email: 'jennifer@example.com',
-    amount: 349.99,
-    method: 'PayPal',
-    status: 'Paid',
-    date: new Date(2025, 1, 3),
-    roomType: 'Suite',
-    roomNumber: '306',
-    checkInDate: new Date(2025, 3, 15),
-    checkOutDate: new Date(2025, 3, 18),
-    subtotal: 320.00,
-    tax: 29.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN013',
-    reservationId: 'RSV67902',
-    guest: 'Christopher Harris',
-    email: 'christopher@example.com',
-    amount: 499.99,
-    method: 'Stripe',
-    status: 'Pending',
-    date: new Date(2025, 1, 2),
-    roomType: 'Penthouse',
-    roomNumber: '803',
-    checkInDate: new Date(2025, 4, 1),
-    checkOutDate: new Date(2025, 4, 5),
-    subtotal: 470.00,
-    tax: 29.99,
-    fee: 0,
-    refundHistory: [],
-  },
-  {
-    id: 'TXN014',
-    reservationId: 'RSV67903',
-    guest: 'Jessica White',
-    email: 'jessica@example.com',
-    amount: 239.99,
-    method: 'Credit Card',
-    status: 'Paid',
-    date: new Date(2025, 1, 1),
-    roomType: 'Standard Room',
-    roomNumber: '103',
-    checkInDate: new Date(2025, 4, 5),
-    checkOutDate: new Date(2025, 4, 7),
-    subtotal: 220.00,
-    tax: 19.99,
-    fee: 0,
-    refundHistory: [],
-  },
-];
 
-// Badge component for status
+import { useGetTransactionsQuery } from '@/features/transaction/transactionApi';
+import type { Transaction } from '@/types/types';
+// Badge component for status (updated for new model)
 const StatusBadge = ({ status }: { status: string }) => {
   const statusConfig = {
-    Paid: { bg: 'bg-green-100', text: 'text-green-800', label: 'Paid' },
-    Pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
-    Failed: { bg: 'bg-red-100', text: 'text-red-800', label: 'Failed' },
-    Refunded: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Refunded' },
+    CAPTURED: { bg: 'bg-green-100', text: 'text-green-800', label: 'Captured' },
+    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
+    FAILED: { bg: 'bg-red-100', text: 'text-red-800', label: 'Failed' },
+    REFUNDED: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Refunded' },
   };
-
-  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.Pending;
-
+  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.PENDING;
   return (
     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}`}>
       {config.label}
@@ -365,12 +110,12 @@ const DateRangePicker = ({
   );
 };
 
-// Transaction Details Sheet
+// Transaction Details Sheet (updated for new model)
 const TransactionDetailsSheet = ({
   transaction,
   onClose,
 }: {
-  transaction: (typeof mockTransactions)[0] | null;
+  transaction: Transaction | null;
   onClose: () => void;
 }) => {
   if (!transaction) return null;
@@ -399,124 +144,32 @@ const TransactionDetailsSheet = ({
             <p className="font-mono text-sm font-semibold">{transaction.id}</p>
           </div>
 
-          {/* Guest Info */}
-          <div className="border-t pt-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Guest Information</p>
-            <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <span className="text-muted-foreground">Name:</span>
-                <span className="font-semibold">{transaction.guest}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                <a href={`mailto:${transaction.email}`} className="text-primary hover:underline text-sm">
-                  {transaction.email}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Room Info */}
-          <div className="border-t pt-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Room Details</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Room Type:</span>
-                <span className="font-semibold">{transaction.roomType}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Room Number:</span>
-                <span className="font-semibold">{transaction.roomNumber}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Reservation Dates */}
-          <div className="border-t pt-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Reservation Dates</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Check-in:</span>
-                <span className="font-semibold">{transaction.checkInDate.toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Check-out:</span>
-                <span className="font-semibold">{transaction.checkOutDate.toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Duration:</span>
-                <span className="font-semibold">
-                  {Math.ceil(
-                    (transaction.checkOutDate.getTime() - transaction.checkInDate.getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )}{' '}
-                  nights
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Breakdown */}
-          <div className="border-t pt-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Payment Breakdown</p>
-            <div className="space-y-2 text-sm bg-muted/50 p-3 rounded-lg">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal:</span>
-                <span className="font-semibold">${transaction.subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Tax:</span>
-                <span className="font-semibold">${transaction.tax.toFixed(2)}</span>
-              </div>
-              {transaction.fee > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Fee:</span>
-                  <span className="font-semibold">${transaction.fee.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="border-t pt-2 mt-2 flex justify-between font-bold text-base">
-                <span>Total:</span>
-                <span className="text-primary">${transaction.amount.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Method & Status */}
+          {/* Payment Info */}
           <div className="border-t pt-4">
             <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Payment Information</p>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Method:</span>
-                <span className="font-semibold">{transaction.method}</span>
+                <span className="text-muted-foreground">Payment Intent ID:</span>
+                <span className="font-semibold">{transaction.paymentIntentId}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Status:</span>
-                <StatusBadge status={transaction.status} />
+                <StatusBadge status={transaction.transactionStatus} />
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Date:</span>
-                <span className="font-semibold">{transaction.date.toLocaleDateString()}</span>
+                <span className="text-muted-foreground">Amount:</span>
+                <span className="font-semibold">{transaction.currency} ${transaction.amount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Authorized At:</span>
+                <span className="font-semibold">{new Date(transaction.authorizedAt).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Captured At:</span>
+                <span className="font-semibold">{new Date(transaction.capturedAt).toLocaleString()}</span>
               </div>
             </div>
           </div>
-
-          {/* Refund History */}
-          {transaction.refundHistory.length > 0 && (
-            <div className="border-t pt-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Refund History</p>
-              <div className="space-y-2">
-                {transaction.refundHistory.map((refund, idx) => (
-                  <div key={idx} className="bg-blue-50 p-3 rounded-lg text-sm">
-                    <p className="text-muted-foreground mb-1">
-                      {refund.date.toLocaleDateString()}
-                    </p>
-                    <p className="font-semibold">${refund.amount.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{refund.reason}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Actions */}
           <div className="border-t pt-4 space-y-2">
@@ -524,7 +177,7 @@ const TransactionDetailsSheet = ({
               <Download className="h-4 w-4" />
               Download Receipt
             </Button>
-            {transaction.status === 'Paid' && (
+            {transaction.transactionStatus === 'CAPTURED' && (
               <Button className="w-full gap-2 cursor-pointer" variant="destructive">
                 <RotateCcw className="h-4 w-4" />
                 Issue Refund
@@ -537,9 +190,9 @@ const TransactionDetailsSheet = ({
   );
 };
 
-// Main Transactions Page
+
 export default function ViewTransactions() {
-  const [transactions] = useState(mockTransactions);
+  const { data: transactions = [], isLoading, error } = useGetTransactionsQuery();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [methodFilter, setMethodFilter] = useState('');
@@ -547,34 +200,33 @@ export default function ViewTransactions() {
     start: null,
     end: null,
   });
-  const [selectedTransaction, setSelectedTransaction] = useState<(typeof mockTransactions)[0] | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Filter transactions
+  // Filter transactions (updated for new model)
   const filteredTransactions = useMemo(() => {
     return transactions.filter((txn) => {
-      // Search filter
       const searchLower = searchTerm.toLowerCase();
+      const idStr = typeof txn.id === 'string' ? txn.id : '';
+      const intentStr = typeof txn.paymentIntentId === 'string' ? txn.paymentIntentId : '';
       const matchesSearch =
-        txn.id.toLowerCase().includes(searchLower) ||
-        txn.guest.toLowerCase().includes(searchLower) ||
-        txn.reservationId.toLowerCase().includes(searchLower);
+        idStr.toLowerCase().includes(searchLower) ||
+        intentStr.toLowerCase().includes(searchLower);
 
       // Status filter
-      const matchesStatus = !statusFilter || txn.status === statusFilter;
+      const matchesStatus = !statusFilter || txn.transactionStatus === statusFilter;
 
-      // Method filter
-      const matchesMethod = !methodFilter || txn.method === methodFilter;
-
-      // Date range filter
+      // Date range filter (use capturedAt)
+      const txnDate = new Date(txn.capturedAt);
       const matchesDate =
-        (!dateRange.start || txn.date >= dateRange.start) &&
-        (!dateRange.end || txn.date <= dateRange.end);
+        (!dateRange.start || txnDate >= dateRange.start) &&
+        (!dateRange.end || txnDate <= dateRange.end);
 
-      return matchesSearch && matchesStatus && matchesMethod && matchesDate;
+      // No method filter in new model
+      return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [transactions, searchTerm, statusFilter, methodFilter, dateRange]);
+  }, [transactions, searchTerm, statusFilter, dateRange]);
 
   // Pagination
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
@@ -583,15 +235,15 @@ export default function ViewTransactions() {
     currentPage * itemsPerPage
   );
 
-  // Analytics calculations
+  // Analytics calculations (updated for new model)
   const analytics = useMemo(() => {
-    const paidTransactions = transactions.filter((t) => t.status === 'Paid');
-    const pendingTransactions = transactions.filter((t) => t.status === 'Pending');
-    const refundedTransactions = transactions.filter((t) => t.status === 'Refunded');
+    const captured = transactions.filter((t) => t.transactionStatus === 'CAPTURED');
+    const pending = transactions.filter((t) => t.transactionStatus === 'PENDING');
+    const refunded = transactions.filter((t) => t.transactionStatus === 'REFUNDED');
 
-    const totalRevenue = paidTransactions.reduce((sum, t) => sum + t.amount, 0);
-    const pendingPayments = pendingTransactions.reduce((sum, t) => sum + t.amount, 0);
-    const totalRefunds = refundedTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const totalRevenue = captured.reduce((sum, t) => sum + t.amount, 0);
+    const pendingPayments = pending.reduce((sum, t) => sum + t.amount, 0);
+    const totalRefunds = refunded.reduce((sum, t) => sum + t.amount, 0);
 
     return {
       totalRevenue,
@@ -600,6 +252,9 @@ export default function ViewTransactions() {
       totalTransactions: transactions.length,
     };
   }, [transactions]);
+
+  if (isLoading) return <div className="p-8">Loading transactions...</div>;
+  if (error) return <div className="p-8 text-red-600">Failed to load transactions.</div>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -627,7 +282,7 @@ export default function ViewTransactions() {
               <CardContent>
                 <div className="text-2xl font-bold">${analytics.totalRevenue.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  From {transactions.filter((t) => t.status === 'Paid').length} paid transactions
+                  From {transactions.filter((t) => t.transactionStatus === 'CAPTURED').length} captured transactions
                 </p>
               </CardContent>
             </Card>
@@ -641,7 +296,7 @@ export default function ViewTransactions() {
               <CardContent>
                 <div className="text-2xl font-bold">${analytics.pendingPayments.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  From {transactions.filter((t) => t.status === 'Pending').length} transactions
+                  From {transactions.filter((t) => t.transactionStatus === 'PENDING').length} transactions
                 </p>
               </CardContent>
             </Card>
@@ -655,7 +310,7 @@ export default function ViewTransactions() {
               <CardContent>
                 <div className="text-2xl font-bold">${analytics.totalRefunds.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  From {transactions.filter((t) => t.status === 'Refunded').length} refunded transactions
+                  From {transactions.filter((t) => t.transactionStatus === 'REFUNDED').length} refunded transactions
                 </p>
               </CardContent>
             </Card>
@@ -685,7 +340,7 @@ export default function ViewTransactions() {
                   />
                 </div>
 
-                {/* Status Filter */}
+                {/* Status Filter (updated for new model) */}
                 <div className="relative">
                   <select
                     value={statusFilter}
@@ -696,31 +351,15 @@ export default function ViewTransactions() {
                     className="w-full px-3 py-2 border border-input rounded-md text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                   >
                     <option value="">All Status</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Failed">Failed</option>
-                    <option value="Refunded">Refunded</option>
+                    <option value="CAPTURED">Captured</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="FAILED">Failed</option>
+                    <option value="REFUNDED">Refunded</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
                 </div>
 
-                {/* Method Filter */}
-                <div className="relative">
-                  <select
-                    value={methodFilter}
-                    onChange={(e) => {
-                      setMethodFilter(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="w-full px-3 py-2 border border-input rounded-md text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                  >
-                    <option value="">All Methods</option>
-                    <option value="Credit Card">Credit Card</option>
-                    <option value="PayPal">PayPal</option>
-                    <option value="Stripe">Stripe</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
-                </div>
+                {/* Method Filter (removed, not in new model) */}
 
                 {/* Date Range */}
                 <DateRangePicker
@@ -764,12 +403,12 @@ export default function ViewTransactions() {
                     {paginatedTransactions.map((txn) => (
                       <TableRow key={txn.id} className="hover:bg-muted/50">
                         <TableCell className="py-3 font-semibold">{txn.id}</TableCell>
-                        <TableCell className="py-3">{txn.guest}</TableCell>
-                        <TableCell className="py-3 text-muted-foreground">{txn.reservationId}</TableCell>
-                        <TableCell className="py-3 font-semibold">${txn.amount.toFixed(2)}</TableCell>
-                        <TableCell className="py-3 text-muted-foreground">{txn.method}</TableCell>
-                        <TableCell className="py-3"><StatusBadge status={txn.status} /></TableCell>
-                        <TableCell className="py-3 text-muted-foreground">{txn.date.toLocaleDateString()}</TableCell>
+                        <TableCell className="py-3">N/A</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">N/A</TableCell>
+                        <TableCell className="py-3 font-semibold">{txn.currency} ${txn.amount.toFixed(2)}</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">N/A</TableCell>
+                        <TableCell className="py-3"><StatusBadge status={txn.transactionStatus} /></TableCell>
+                        <TableCell className="py-3 text-muted-foreground">{new Date(txn.capturedAt).toLocaleDateString()}</TableCell>
                         <TableCell className="py-3">
                           <div className="flex gap-2">
                             <Button
