@@ -39,7 +39,7 @@ public class ReservationController {
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create reservation with payment authorization (holds funds)
-    @PostMapping
+    @PostMapping("/new")
     public ResponseEntity<Object> createReservation(@RequestBody CreateReservationRequest request) {
         try {
             Reservation createdReservation = reservationService.createReservation(request);
@@ -88,7 +88,7 @@ public class ReservationController {
 //DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     //DELETE reservation by ID
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable String id) {
         try {
             reservationService.cancelReservation(id);

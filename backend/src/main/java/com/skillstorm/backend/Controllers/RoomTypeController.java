@@ -57,7 +57,7 @@ public class RoomTypeController {
 //POST MAPPINGS///////////////////////////////////////////////////////////////////////////////////////////
 
     //Create new room type (Required fields: name, pricePerNight, maxGuests, squareFootage)
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<RoomType> createRoomType(@RequestBody RoomType roomType) {
         try {
             RoomType savedRoomType = roomTypeService.createRoomType(roomType);

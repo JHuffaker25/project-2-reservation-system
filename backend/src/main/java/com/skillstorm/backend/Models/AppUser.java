@@ -1,10 +1,17 @@
 package com.skillstorm.backend.Models;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Document(collection = "users")
-public class AppUser {
+public class AppUser implements UserDetails {
 	
 	@Id
 	private String id;
@@ -143,4 +150,46 @@ public class AppUser {
 	public void setStripeCustomerId(String stripeCustomerId) {
 		this.stripeCustomerId = stripeCustomerId;
 	}
+
+
+
+	//UserDetails interface methods
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+    
+		Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+
+		// Add role as a granted authority
+		SimpleGrantedAuthority userRole = new SimpleGrantedAuthority("ROLE_" + this.role);
+		authorities.add(userRole);
+
+		return authorities;
+    
+}
+	@Override
+	public String getUsername() {
+		return this.email;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
+
+	
 }

@@ -22,23 +22,43 @@ public class SecurityConfig {
     
         http
             .cors(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable()) // Disable CSRF TEMPORARILY for testing purposes
             .authorizeHttpRequests(authorize -> {
                 authorize
                 
+                //PERMITTED ROUTES
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
-                .requestMatchers("/room-types/**").permitAll()
+
+                //SECURED ROUTES
+                .requestMatchers("/users/all").hasRole("ADMIN")
+                .requestMatchers("/users/create").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers("/users/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers("/users/delete/{id}").hasRole("ADMIN")
+                .requestMatchers("/reservations/all").hasRole("ADMIN")
+                .requestMatchers("/reservations/new").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers("/reservations/{id}/check-in").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers("/reservations/{id}/cancel").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers("/reservations/delete/{id}").hasRole("ADMIN")
+                .requestMatchers("/rooms/new").hasRole("ADMIN")
+                .requestMatchers("/rooms/delete/{id}").hasRole("ADMIN")
+                .requestMatchers("/room-types/create").hasRole("ADMIN")
+                .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN")
+                .requestMatchers("/transactions/all").hasRole("ADMIN")
+                .requestMatchers("/transactions/new").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN")
+
+                //ALL OTHER ROUTES
+                .anyRequest().permitAll();
                 
-                .anyRequest().permitAll(); // TEMPORARILY allow all requests with no auth, to be changed later
-                
-                /*TESTING FOR AUTHENTICATION RULES
-                .requestMatchers("/tests/hello").permitAll()
-                .requestMatchers("/tests/private-info").authenticated()*/
+                //TESTING FOR AUTHENTICATION RULES
+                //.requestMatchers("/tests/hello").permitAll()
+                //.requestMatchers("/tests/private-info").authenticated()
             })
-
-            //Tells Spring security to use registered oauth2 login configuration
-            .oauth2Login(Customizer.withDefaults()); 
             
-
+            //Basic AND Oauth both accepted
+            .oauth2Login(Customizer.withDefaults())
+            .httpBasic(Customizer.withDefaults());
+            
         return http.build();
     }
 

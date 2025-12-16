@@ -33,6 +33,8 @@ logging:
 server: 
     port: 8282
     
+
+    
 stripe:
     public-key: ${PUBLIC_KEY}
     private-key: ${PRIVATE_KEY}

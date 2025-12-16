@@ -22,11 +22,15 @@ public class AppUserService {
         this.stripeService = stripeService;
     }
 
+
+
 //GET METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
     public List<AppUser> getAllUsers() {
         return appUserRepository.findAll();
     }
+
+
 
 //POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,6 +63,8 @@ public class AppUserService {
         return stripeService.createTestPaymentMethod(cardType, user.getStripeCustomerId());
     }
 
+
+
 //DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
     public void deleteUser(String id) {
@@ -68,6 +74,8 @@ public class AppUserService {
         appUserRepository.deleteById(id);
     }
 
+
+    
 //HELPER METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
     private AppUser findUserOrThrow(String userId) {
