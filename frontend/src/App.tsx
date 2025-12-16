@@ -9,7 +9,7 @@ import LandingPage from './pages/LandingPage'
 import Profile from './pages/Profile'
 import ManageReservations from './pages/ManageReservations'
 import UpdateRooms from './pages/UpdateRooms'
-import RoomDetails from './pages/RoomDetails'
+import BookReservation from './pages/BookReservation'
 import { ProtectedLayout } from './components/protected-layout'
 import { useEffect } from 'react'
 import { useAppDispatch } from './app/hooks'
@@ -20,10 +20,10 @@ function App() {
     const dispatch = useAppDispatch();
 
     const fakeUser = {
-        id: "1",
+        id: "69406ff27b0ba5176cd88e5e",
         email: "test@test.com",
         name: "Test User",
-        role: "guest",
+        role: "user",
         preferences: {
             emailNotifications: true,
             darkMode: false,
@@ -49,7 +49,7 @@ function App() {
                 <Route path="/signin" element={<Signin />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/rooms" element={<Rooms />} />
-                <Route path="/rooms/:id/book" element={<RoomDetails />} />
+                <Route path="/rooms/:id/book" element={<BookReservation />} />
             </Route>
 
             <Route element={<ProtectedLayout requires="user" />}>
