@@ -33,3 +33,23 @@ export interface PaymentMethod {
 export interface User {
     id: string;
 }
+
+export interface Room {
+    id: string;
+    roomNumber: string;
+    typeId: string;
+    status: string;
+}
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  reservationId: string;
+  paymentIntentId: string;
+  transactionStatus: 'CAPTURED' | 'PENDING' | 'FAILED' | 'REFUNDED';
+  amount: number;
+  currency: string;
+  authorizedAt: string; // ISO string
+  capturedAt: string; // ISO string
+  cancelledAt: string; // ISO string
+}
