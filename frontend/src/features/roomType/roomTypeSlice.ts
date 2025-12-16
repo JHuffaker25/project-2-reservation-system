@@ -11,7 +11,7 @@ export interface RoomType {
     images: string[];
 }
 
-const roomSlice = createSlice({
+const roomTypeSlice = createSlice({
     name: "roomTypes",
     initialState: {
         all: [] as RoomType[],
@@ -34,10 +34,10 @@ const roomSlice = createSlice({
         setRoomType(state, action: PayloadAction<RoomType>) {
             state.current= action.payload;
             state.error = null;
-        }
+        },
     },
 });
 
-export const { setRoomTypes, getRoomTypesSuccess, getRoomTypesFailure, setRoomType } = roomSlice.actions;
+export const { setRoomTypes, getRoomTypesSuccess, getRoomTypesFailure, setRoomType } = roomTypeSlice.actions;
 
-export default roomSlice.reducer;
+export default roomTypeSlice.reducer;

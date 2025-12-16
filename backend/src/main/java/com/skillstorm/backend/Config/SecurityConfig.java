@@ -22,21 +22,24 @@ public class SecurityConfig {
     
         http
             .cors(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> {
                 authorize
                 
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                 .requestMatchers("/room-types/**").permitAll()
+                .requestMatchers("/users/**").permitAll()
+                .requestMatchers("/reservations/**").permitAll()
                 
                 .anyRequest().permitAll(); // TEMPORARILY allow all requests with no auth, to be changed later
                 
                 /*TESTING FOR AUTHENTICATION RULES
                 .requestMatchers("/tests/hello").permitAll()
                 .requestMatchers("/tests/private-info").authenticated()*/
-            })
+            });
 
             //Tells Spring security to use registered oauth2 login configuration
-            .oauth2Login(Customizer.withDefaults()); 
+            // .oauth2Login(Customizer.withDefaults()); 
             
 
         return http.build();

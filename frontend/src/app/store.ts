@@ -1,7 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit'
 import themeReducer from '@/features/theme/themeSlice'
 import authReducer from '@/features/auth/authSlice'
-import roomReducer from '@/features/rooms/roomSlice'
+import roomTypeReducer from '@/features/roomType/roomTypeSlice'
+import reservationReducer from '@/features/reservation/reservationSlice'
 import { baseApi } from './baseApi'
 import { authApi } from '@/features/auth/authApi'
 
@@ -9,7 +10,8 @@ export const store = configureStore({
     reducer: {
         theme: themeReducer,
         auth: authReducer,
-        roomTypes: roomReducer,
+        roomTypes: roomTypeReducer,
+        reservations: reservationReducer,
         [baseApi.reducerPath]: baseApi.reducer,
         [authApi.reducerPath]: authApi.reducer,
     },

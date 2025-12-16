@@ -3,9 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { X, ChevronDown } from 'lucide-react';
 import { useAppDispatch } from '@/app/hooks';
-import { setRoomTypes } from '@/features/rooms/roomSlice';
-import { useGetRoomTypesQuery } from '@/features/rooms/roomApi';
-import type { RoomType } from '@/features/rooms/roomSlice';
+import { setRoomTypes } from '@/features/roomType/roomTypeSlice';
+import { useGetRoomTypesQuery } from '@/features/roomType/roomTypeApi';
+import type { RoomType } from '@/features/roomType/roomTypeSlice';
 import Loader from '@/components/loader';
 import { useNavigate } from 'react-router';
 import AmenityIcon from '@/components/amenity-icon';
@@ -25,9 +25,6 @@ const RoomCard: React.FC<RoomType> = ({ id, name, description, images, amenities
           alt={name}
           className={`w-full h-full object-cover transition-transform duration-300 ${isHovered ? 'scale-105' : 'scale-100'}`}
         />
-        <div className="absolute top-3 right-3 bg-muted text-primary px-3 py-1 rounded-full text-xs font-semibold">
-          {name}
-        </div>
       </div>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">{name}</CardTitle>

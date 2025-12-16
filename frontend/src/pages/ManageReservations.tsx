@@ -11,85 +11,8 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { Table, TableHeader, TableRow, TableCell, TableBody } from '@/components/ui/table';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, Calendar, X, Search, ChevronDown } from 'lucide-react';
-
-
-// Reservation type definition
-type Reservation = {
-  id: string;
-  guestName: string;
-  email: string;
-  roomType: string;
-  room: string;
-  checkIn: Date;
-  checkOut: Date;
-  status: string;
-  guests: number;
-  totalPrice: number;
-};
-
-// Dummy reservation data
-const dummyReservations = [
-  {
-    id: 'RSV1001',
-    guestName: 'John Doe',
-    email: 'john@example.com',
-    roomType: 'Suite',
-    room: '305',
-    checkIn: new Date(2025, 11, 10),
-    checkOut: new Date(2025, 11, 15),
-    status: 'Upcoming',
-    guests: 2,
-    totalPrice: 1200,
-  },
-  {
-    id: 'RSV1002',
-    guestName: 'Jane Smith',
-    email: 'jane@example.com',
-    roomType: 'Deluxe',
-    room: '201',
-    checkIn: new Date(2025, 11, 5),
-    checkOut: new Date(2025, 11, 8),
-    status: 'Completed',
-    guests: 2,
-    totalPrice: 600,
-  },
-  {
-    id: 'RSV1003',
-    guestName: 'Michael Johnson',
-    email: 'michael@example.com',
-    roomType: 'Family',
-    room: '405',
-    checkIn: new Date(2025, 11, 20),
-    checkOut: new Date(2025, 11, 25),
-    status: 'Upcoming',
-    guests: 4,
-    totalPrice: 1500,
-  },
-  {
-    id: 'RSV1004',
-    guestName: 'Sarah Williams',
-    email: 'sarah@example.com',
-    roomType: 'Standard',
-    room: '102',
-    checkIn: new Date(2025, 10, 28),
-    checkOut: new Date(2025, 11, 2),
-    status: 'Canceled',
-    guests: 1,
-    totalPrice: 400,
-  },
-  {
-    id: 'RSV1005',
-    guestName: 'Emily Davis',
-    email: 'emily@example.com',
-    roomType: 'Penthouse',
-    room: '801',
-    checkIn: new Date(2025, 11, 12),
-    checkOut: new Date(2026, 11, 16),
-    status: 'Ongoing',
-    guests: 2,
-    totalPrice: 2500,
-  },
-];
+import { useGetReservationsQuery } from '@/features/reservation/reservationApi';
+import Loader from '@/components/loader';
 
 const roomTypes = ['All types', 'Standard', 'Deluxe', 'Suite', 'Family', 'Ocean View', 'Penthouse'];
 const statuses = ['All statuses', 'Upcoming', 'Completed', 'Canceled', 'Current'];
@@ -449,8 +372,9 @@ const sortOptions = [
   { label: 'Status', value: 'status' },
 ] as const;
 
+
 const ManageReservations: React.FC = () => {
-  const [reservations, setReservations] = useState<Reservation[]>(dummyReservations);
+  const { data: reservations = [], isLoading, error } = useGetReservationsQuery();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     dateStart: null as Date | null,
@@ -464,30 +388,25 @@ const ManageReservations: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editReservation, setEditReservation] = useState<any | null>(null);
 
-  // Filtering and searching
+  // Filtering and searching (updated for API model)
   const filteredReservations = useMemo(() => {
     return reservations.filter(r => {
-      // Search
       const searchLower = search.toLowerCase();
       if (
         searchLower &&
-        !r.guestName.toLowerCase().includes(searchLower) &&
-        !r.email.toLowerCase().includes(searchLower) &&
-        !r.id.toLowerCase().includes(searchLower)
+        !r.userId.toLowerCase().includes(searchLower) &&
+        !(r.id && r.id.toLowerCase().includes(searchLower))
       ) {
         return false;
       }
       // Date range
       if (
-        (filters.dateStart && r.checkIn < filters.dateStart) ||
-        (filters.dateEnd && r.checkOut > filters.dateEnd)
+        (filters.dateStart && new Date(r.checkIn) < filters.dateStart) ||
+        (filters.dateEnd && new Date(r.checkOut) > filters.dateEnd)
       ) {
         return false;
       }
-      // Room type
-      if (filters.roomType && r.roomType !== filters.roomType) {
-        return false;
-      }
+      // Room type (not available in model, skip or add if available)
       // Status
       if (filters.status && r.status !== filters.status) {
         return false;
@@ -496,22 +415,22 @@ const ManageReservations: React.FC = () => {
     });
   }, [reservations, search, filters]);
 
-  // Sorting
+  // Sorting (updated for API model)
   const sortedReservations = useMemo(() => {
     return [...filteredReservations].sort((a, b) => {
       let valA: string | Date = (() => {
         switch (sortBy) {
-          case 'checkIn': return a.checkIn;
-          case 'guestName': return a.guestName;
-          case 'status': return a.status;
+          case 'checkIn': return a.checkIn ? new Date(a.checkIn) : new Date(0);
+          case 'guestName': return a.userId ?? '';
+          case 'status': return a.status ?? '';
           default: return '';
         }
       })();
       let valB: string | Date = (() => {
         switch (sortBy) {
-          case 'checkIn': return b.checkIn;
-          case 'guestName': return b.guestName;
-          case 'status': return b.status;
+          case 'checkIn': return b.checkIn ? new Date(b.checkIn) : new Date(0);
+          case 'guestName': return b.userId ?? '';
+          case 'status': return b.status ?? '';
           default: return '';
         }
       })();
@@ -529,30 +448,27 @@ const ManageReservations: React.FC = () => {
   const totalPages = Math.ceil(sortedReservations.length / PAGE_SIZE);
   const paginatedReservations = sortedReservations.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // Summary counts
-  const summary = useMemo(() => {
-    const total = reservations.length;
-    const upcoming = reservations.filter(r => r.status === 'Upcoming').length;
-    const canceled = reservations.filter(r => r.status === 'Canceled').length;
-    return { total, upcoming, canceled };
-  }, [reservations]);
+  // Summary counts (optional, can update if needed)
 
-  // Actions
+  // Actions (edit/save/cancel/complete would require API mutation endpoints)
   const handleEdit = (reservation: any) => {
     setEditReservation(reservation);
     setEditModalOpen(true);
   };
   const handleSaveEdit = (updated: any) => {
-    setReservations(reservations.map(r => (r.id === updated.id ? updated : r)));
+    // TODO: Implement API update
     setEditModalOpen(false);
     setEditReservation(null);
   };
   const handleCancel = (id: string) => {
-    setReservations(reservations.map(r => (r.id === id ? { ...r, status: 'Canceled' } : r)));
+    // TODO: Implement API cancel
   };
   const handleComplete = (id: string) => {
-    setReservations(reservations.map(r => (r.id === id ? { ...r, status: 'Completed' } : r)));
+    // TODO: Implement API complete
   };
+
+  if (isLoading) return <Loader />;
+  if (error) return <div className="p-8 text-red-600">Failed to load reservations.</div>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -600,21 +516,16 @@ const ManageReservations: React.FC = () => {
                   <TableBody>
                     {paginatedReservations.map(r => (
                       <TableRow key={r.id} className="hover:bg-muted/50">
-                        <TableCell className="py-3">{r.guestName}</TableCell>
-                        <TableCell className="py-3">{r.roomType} #{r.room}</TableCell>
-                        <TableCell className="py-3 text-muted-foreground">{r.checkIn.toLocaleDateString()}</TableCell>
-                        <TableCell className="py-3 text-muted-foreground">{r.checkOut.toLocaleDateString()}</TableCell>
-                        <TableCell className="py-3 font-semibold"><StatusBadge status={r.status} /></TableCell>
+                        <TableCell className="py-3">{r.userId}</TableCell>
+                        <TableCell className="py-3">{r.roomId}</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">{new Date(r.checkIn).toLocaleDateString()}</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">{new Date(r.checkOut).toLocaleDateString()}</TableCell>
+                        <TableCell className="py-3 font-semibold"><StatusBadge status={r.status ?? ''} /></TableCell>
                         <TableCell className="py-3">${r.totalPrice}</TableCell>
                         <TableCell className="py-3 w-1/6">
                           <div className="flex gap-2">
                             <Button size="sm" variant="outline" onClick={() => handleEdit(r)} className="cursor-pointer">Edit</Button>
-                            {r.status !== 'Canceled' && r.status !== 'Completed' && (
-                              <Button size="sm" variant="destructive" onClick={() => handleCancel(r.id)} disabled={r.status === 'Canceled'} className="cursor-pointer">Cancel</Button>
-                            )}
-                            {r.status !== 'Canceled' && r.status !== 'Completed' && (
-                              <Button size="sm" variant="default" onClick={() => handleComplete(r.id)} disabled={r.status === 'Completed' || r.status === 'Canceled'} className="cursor-pointer">Check Out</Button>
-                            )}
+                            {/* Cancel/Complete actions would require API mutation */}
                           </div>
                         </TableCell>
                       </TableRow>

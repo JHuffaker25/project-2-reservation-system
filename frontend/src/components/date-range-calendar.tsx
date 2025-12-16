@@ -206,7 +206,7 @@ export default function DateRangeCalendar({
           );
         })}
       </div>
-      {(startDate || endDate) && (
+      {/* {(startDate || endDate) && (
         <div className="mt-4 pt-4 border-t space-y-2">
           <div className="text-sm">
             <span className="text-muted-foreground">Start: </span>
@@ -225,7 +225,7 @@ export default function DateRangeCalendar({
             </div>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 }
