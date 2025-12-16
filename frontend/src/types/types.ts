@@ -16,6 +16,7 @@ export interface Reservation {
   numGuests: number;
   totalPrice: number;
   paymentMethodId?: string;
+  status?: string;
 }
 
 export interface PaymentMethod {
