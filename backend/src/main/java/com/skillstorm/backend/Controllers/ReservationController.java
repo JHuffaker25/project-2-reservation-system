@@ -104,7 +104,7 @@ public class ReservationController {
 //DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     //DELETE reservation by ID
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable String id) {
         try {
             reservationService.cancelReservation(id);

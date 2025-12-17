@@ -3,6 +3,10 @@ package com.skillstorm.backend.Services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.skillstorm.backend.Models.AppUser;
@@ -12,18 +16,23 @@ import com.stripe.model.Customer;
 import com.stripe.model.PaymentMethod;
 
 @Service
-public class AppUserService {
+public class AppUserService implements UserDetailsService {
 
     private final AppUserRepository appUserRepository;
     private final StripeService stripeService;
+    private final PasswordEncoder passwordEncoder;
 
-    public AppUserService(AppUserRepository appUserRepository, StripeService stripeService) {
+    public AppUserService(AppUserRepository appUserRepository, StripeService stripeService, PasswordEncoder passwordEncoder) {
         this.appUserRepository = appUserRepository;
         this.stripeService = stripeService;
+        this.passwordEncoder = passwordEncoder;
     }
+
+
 
 //GET METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
+    //Returns all users
     public List<AppUser> getAllUsers() {
         return appUserRepository.findAll();
     }
@@ -32,6 +41,15 @@ public class AppUserService {
         AppUser user = findUserOrThrow(userId);
         return stripeService.listPaymentMethods(user.getStripeCustomerId());
     }
+
+     //UserDetailsService interface method returns a user by username (email in this case)
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+
+
 
 //POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +68,9 @@ public class AppUserService {
                 user.getFirstName() + " " + user.getLastName());
         user.setStripeCustomerId(stripeCustomer.getId());
 
+        //Encrypt password before saving
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         return appUserRepository.save(user);
     }
 
@@ -64,6 +85,8 @@ public class AppUserService {
         AppUser user = findUserOrThrow(userId);
         return stripeService.createTestPaymentMethod(cardType, user.getStripeCustomerId());
     }
+
+
 
 //DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 

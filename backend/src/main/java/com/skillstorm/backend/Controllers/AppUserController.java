@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
 
 import com.skillstorm.backend.Models.AppUser;
 import com.skillstorm.backend.Services.AppUserService;
@@ -31,12 +30,9 @@ public class AppUserController {
         this.appUserService = appUserService;
     }
 
-//GET MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
-    @GetMapping("/login")
-    public RedirectView loginRedirect() {
-        return new RedirectView("http://localhost:5173");
-    }
+
+//GET MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     @GetMapping("/all")
     public ResponseEntity<List<AppUser>> getAllUsers() {
@@ -63,9 +59,18 @@ public class AppUserController {
         }
     }
 
+    //This may be unecessary with frontend handling routing
+    /*@GetMapping("/login")
+    public RedirectView loginRedirect() {
+        return new RedirectView("http://localhost:5173");
+    }*/
+
+
+        
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     //To be adjusted to account for authentication
+    //required fields: email, password, role, firstName, lastName, phone
     @PostMapping("/create")
     public ResponseEntity<Object> createUser(@RequestBody AppUser user) {
         try {
@@ -113,10 +118,12 @@ public class AppUserController {
         }
     }
 
+
+
 //DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
 	//DELETE user by ID
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Void> deleteUser(@PathVariable String id) {
 		try {
 			appUserService.deleteUser(id);
