@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -17,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfig {
     
+    //Security filter chain configuration
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     
@@ -50,7 +53,7 @@ public class SecurityConfig {
                 //ALL OTHER ROUTES
                 .anyRequest().permitAll();
                 
-                //TESTING FOR AUTHENTICATION RULES
+                //TESTING ROUTES
                 //.requestMatchers("/tests/hello").permitAll()
                 //.requestMatchers("/tests/private-info").authenticated()
             })
@@ -62,6 +65,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    //Cors configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
         @Value("${FRONTEND_URL}") String frontendUrl
@@ -76,4 +80,11 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
+    //Password encoder
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder(10);
+    }
+
 }
