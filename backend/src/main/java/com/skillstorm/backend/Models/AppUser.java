@@ -18,7 +18,7 @@ public class AppUser implements UserDetails {
 
 	private String email;
 
-	private String password; //THIS SHOULD BE HASHED BEFORE STORING, WILL UPDATE LATER
+	private String password; //IS HASHED
 
 	private String role;
 

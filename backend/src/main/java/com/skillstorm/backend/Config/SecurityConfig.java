@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
 
                 //SECURED ROUTES
-                .requestMatchers("/users/all").hasRole("ADMIN")
+                /* .requestMatchers("/users/all").hasRole("ADMIN")
                 .requestMatchers("/users/create").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/users/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/users/delete/{id}").hasRole("ADMIN")
@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN")
                 .requestMatchers("/transactions/all").hasRole("ADMIN")
                 .requestMatchers("/transactions/new").hasAnyRole("ADMIN", "CUSTOMER")
-                .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN")
+                .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN")*/
 
                 //ALL OTHER ROUTES
                 .anyRequest().permitAll();
