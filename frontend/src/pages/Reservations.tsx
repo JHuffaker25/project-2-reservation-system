@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -18,66 +18,12 @@ import {
   X,
   AlertTriangle,
 } from 'lucide-react';
-
-// Sample reservation data
-const initialReservations = [
-  {
-    id: 1,
-    confirmationNumber: 'RES001',
-    roomName: 'Standard Room',
-    roomType: 'Standard',
-    roomImage: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop',
-    checkInDate: new Date(2025, 11, 10),
-    checkOutDate: new Date(2025, 11, 15),
-    guests: 2,
-    totalPrice: 495,
-    pricePerNight: 99,
-    status: 'confirmed',
-    hotelName: 'Luxury Hotel Downtown',
-  },
-  {
-    id: 2,
-    confirmationNumber: 'RES002',
-    roomName: 'Deluxe Room',
-    roomType: 'Deluxe',
-    roomImage: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=300&fit=crop',
-    checkInDate: new Date(2026, 0, 15),
-    checkOutDate: new Date(2026, 0, 20),
-    guests: 2,
-    totalPrice: 745,
-    pricePerNight: 149,
-    status: 'confirmed',
-    hotelName: 'Coastal Resort Paradise',
-  },
-  {
-    id: 3,
-    confirmationNumber: 'RES003',
-    roomName: 'Suite',
-    roomType: 'Suite',
-    roomImage: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop',
-    checkInDate: new Date(2024, 10, 5),
-    checkOutDate: new Date(2024, 10, 8),
-    guests: 4,
-    totalPrice: 747,
-    pricePerNight: 249,
-    status: 'completed',
-    hotelName: 'Mountain View Lodge',
-  },
-  {
-    id: 4,
-    confirmationNumber: 'RES004',
-    roomName: 'Family Room',
-    roomType: 'Family',
-    roomImage: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&h=300&fit=crop',
-    checkInDate: new Date(2024, 8, 1),
-    checkOutDate: new Date(2024, 8, 5),
-    guests: 6,
-    totalPrice: 796,
-    pricePerNight: 199,
-    status: 'completed',
-    hotelName: 'Beachside Family Resort',
-  },
-];
+import { useGetReservationsQuery } from '@/features/reservation/reservationApi';
+import { useAppDispatch } from '@/app/hooks';
+import { setUserReservations } from '@/features/reservation/reservationSlice';
+import type { Reservation } from '@/types/types';
+import { useGetRoomTypeByIdQuery } from '@/features/roomType/roomTypeApi';
+import Loader from '@/components/loader';
 
 // Simple Calendar for date range selection
 const DateRangePicker = ({
@@ -301,25 +247,35 @@ const ReservationCard = ({
   onCancel,
   onModify,
 }: {
-  reservation: (typeof initialReservations)[0];
-  onCancel: (id: number) => void;
-  onModify: (id: number) => void;
+  reservation: Reservation;
+  onCancel: (id: string) => void;
+  onModify: (id: string) => void;
 }) => {
-  const checkInDate = new Date(reservation.checkInDate);
-  const checkOutDate = new Date(reservation.checkOutDate);
+  const checkInDate = new Date(reservation.checkIn);
+  const checkOutDate = new Date(reservation.checkOut);
   const nights = Math.ceil(
     (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
   );
   const today = new Date();
   const isUpcoming = checkInDate > today;
 
+  // const { data: roomType, isLoading } = useGetRoomTypeByIdQuery(reservation.room);
+  const roomType = {
+    id: 'roomType1',
+    name: 'Deluxe Suite',
+    pricePerNight: 150,
+    images: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZGVsdXhlJTIwc3VpdGV8ZW58MHx8MHx8fDA%3D&w=1000&q=80',
+    ],
+  };
+
   return (
     <Card className="overflow-hidden pt-0">
       {/* Image Section */}
       <div className="relative h-54 bg-gray-200 overflow-hidden">
         <img
-          src={reservation.roomImage}
-          alt={reservation.roomName}
+          src={roomType?.images[0]}
+          alt={roomType?.name}
           className="w-full h-full object-cover"
         />
         <div className="absolute top-3 right-3 bg-muted text-primary px-3 py-1 rounded-full text-xs font-semibold">
@@ -331,9 +287,9 @@ const ReservationCard = ({
       <CardContent className="pt-6 space-y-4">
         {/* Hotel and Room Info */}
         <div>
-          <p className="text-sm text-muted-foreground">{reservation.hotelName}</p>
-          <h3 className="text-lg font-semibold">{reservation.roomName}</h3>
-          <p className="text-sm text-muted-foreground">{reservation.confirmationNumber}</p>
+          {/* <p className="text-sm text-muted-foreground">{reservation.hotelName}</p> */}
+          <h3 className="text-lg font-semibold">{roomType?.name}</h3>
+          {/* <p className="text-sm text-muted-foreground">{reservation.confirmationNumber}</p> */}
         </div>
 
         {/* Details Grid */}
@@ -352,7 +308,7 @@ const ReservationCard = ({
           </div>
           <div>
             <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Guests</p>
-            <p className="font-semibold">{reservation.guests}</p>
+            <p className="font-semibold">{reservation.numGuests}</p>
           </div>
         </div>
 
@@ -360,9 +316,9 @@ const ReservationCard = ({
         <div className="space-y-1">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              ${reservation.pricePerNight} × {nights} nights
+              ${roomType?.pricePerNight} × {nights} nights
             </span>
-            <span className="font-semibold">${reservation.pricePerNight * nights}</span>
+            <span className="font-semibold">${(roomType?.pricePerNight ?? 0) * nights}</span>
           </div>
           <div className="flex justify-between text-lg font-bold border-t pt-2">
             <span>Total</span>
@@ -376,7 +332,7 @@ const ReservationCard = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onModify(reservation.id)}
+              // onClick={() => onModify(reservation.id)}
               className="flex-1 gap-2 cursor-pointer"
             >
               <Edit2 className="h-4 w-4" />
@@ -385,7 +341,7 @@ const ReservationCard = ({
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => onCancel(reservation.id)}
+              // onClick={() => onCancel(reservation.id)}
               className="flex-1 gap-2 cursor-pointer"
             >
               <Trash2 className="h-4 w-4" />
@@ -399,112 +355,122 @@ const ReservationCard = ({
 };
 
 // Modify Reservation Dialog
-const ModifyReservationDialog = ({
-  reservation,
-  onClose,
-  onConfirm,
-}: {
-  reservation: (typeof initialReservations)[0];
-  onClose: () => void;
-  onConfirm: (checkInDate: Date, checkOutDate: Date, roomType: string) => void;
-}) => {
-  const [roomType, setRoomType] = useState(reservation.roomType);
-  const roomTypes = ['Standard', 'Deluxe', 'Suite', 'Family', 'Ocean View', 'Penthouse'];
+// const ModifyReservationDialog = ({
+//   reservation,
+//   onClose,
+//   onConfirm,
+// }: {
+//   reservation: (typeof initialReservations)[0];
+//   onClose: () => void;
+//   onConfirm: (checkInDate: Date, checkOutDate: Date, roomType: string) => void;
+// }) => {
+//   const [roomType, setRoomType] = useState(reservation.roomType);
+//   const roomTypes = ['Standard', 'Deluxe', 'Suite', 'Family', 'Ocean View', 'Penthouse'];
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle>Modify Reservation</CardTitle>
-            <CardDescription>{reservation.confirmationNumber}</CardDescription>
-          </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
+//   return (
+//     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+//         <CardHeader className="flex flex-row items-center justify-between space-y-0">
+//           <div>
+//             <CardTitle>Modify Reservation</CardTitle>
+//             <CardDescription>{reservation.confirmationNumber}</CardDescription>
+//           </div>
+//           <Button variant="ghost" size="sm" onClick={onClose}>
+//             <X className="h-4 w-4" />
+//           </Button>
+//         </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* Date Selection */}
-          <div>
-            <h3 className="text-sm font-semibold mb-4">Update Check-in and Check-out Dates</h3>
-            <DateRangePicker
-              initialCheckIn={new Date(reservation.checkInDate)}
-              initialCheckOut={new Date(reservation.checkOutDate)}
-              onConfirm={(checkIn, checkOut) => {
-                onConfirm(checkIn, checkOut, roomType);
-              }}
-            />
-          </div>
+//         <CardContent className="space-y-6">
+//           {/* Date Selection */}
+//           <div>
+//             <h3 className="text-sm font-semibold mb-4">Update Check-in and Check-out Dates</h3>
+//             <DateRangePicker
+//               initialCheckIn={new Date(reservation.checkInDate)}
+//               initialCheckOut={new Date(reservation.checkOutDate)}
+//               onConfirm={(checkIn, checkOut) => {
+//                 onConfirm(checkIn, checkOut, roomType);
+//               }}
+//             />
+//           </div>
 
-          {/* Room Type Selection */}
-          <div className="border-t pt-6">
-            <h3 className="text-sm font-semibold mb-4">Change Room Type</h3>
-            <div className="relative">
-              <select
-                value={roomType}
-                onChange={(e) => setRoomType(e.target.value)}
-                className="w-full px-4 py-3 border border-input rounded-md bg-background text-foreground text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              >
-                {roomTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
-            </div>
-          </div>
+//           {/* Room Type Selection */}
+//           <div className="border-t pt-6">
+//             <h3 className="text-sm font-semibold mb-4">Change Room Type</h3>
+//             <div className="relative">
+//               <select
+//                 value={roomType}
+//                 onChange={(e) => setRoomType(e.target.value)}
+//                 className="w-full px-4 py-3 border border-input rounded-md bg-background text-foreground text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+//               >
+//                 {roomTypes.map((type) => (
+//                   <option key={type} value={type}>
+//                     {type}
+//                   </option>
+//                 ))}
+//               </select>
+//               <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
+//             </div>
+//           </div>
 
-          {/* Close Button */}
-          <div className="flex gap-2 justify-end pt-4 border-t">
-            <Button variant="outline" onClick={onClose} className="cursor-pointer">
-              Cancel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
+//           {/* Close Button */}
+//           <div className="flex gap-2 justify-end pt-4 border-t">
+//             <Button variant="outline" onClick={onClose} className="cursor-pointer">
+//               Cancel
+//             </Button>
+//           </div>
+//         </CardContent>
+//       </Card>
+//     </div>
+//   );
+// };
 
 // Main Reservations Page
 export default function Reservations() {
-  const [reservations, setReservations] = useState(initialReservations);
-  const [cancelDialogId, setCancelDialogId] = useState<number | null>(null);
-  const [modifyDialogId, setModifyDialogId] = useState<number | null>(null);
+
+  const { data: reservations, isLoading } = useGetReservationsQuery();
+    const dispatch = useAppDispatch();
+  
+    useEffect(() => {
+      if (reservations) {
+        dispatch(setUserReservations(reservations));
+      }
+    }, [reservations]);
+
+  const [cancelDialogId, setCancelDialogId] = useState<string | null>(null);
+  const [modifyDialogId, setModifyDialogId] = useState<string | null>(null);
 
   const today = new Date();
-  const upcomingReservations = reservations.filter(
-    (r) => new Date(r.checkInDate) > today
+  const upcomingReservations = reservations?.filter(
+    (r) => new Date(r.checkIn) > today
   );
-  const pastReservations = reservations.filter(
-    (r) => new Date(r.checkInDate) <= today
+  const pastReservations = reservations?.filter(
+    (r) => new Date(r.checkIn) <= today
   );
 
-  const handleCancelReservation = (id: number) => {
-    setReservations((prev) =>
-      prev.filter((r) => r.id !== id)
-    );
-    setCancelDialogId(null);
+  const handleCancelReservation = (id: string) => {
+    // setReservations((prev) =>
+    //   prev.filter((r) => r.id !== id)
+    // );
+    // setCancelDialogId(null);
   };
 
-  const handleModifyReservation = (id: number, checkIn: Date, checkOut: Date, roomType: string) => {
-    setReservations((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              checkInDate: checkIn,
-              checkOutDate: checkOut,
-              roomType: roomType,
-            }
-          : r
-      )
-    );
-    setModifyDialogId(null);
+  const handleModifyReservation = (id: string, checkIn: string, checkOut: string, roomType: string) => {
+    // setReservations((prev) =>
+    //   prev.map((r) =>
+    //     r.id === id
+    //       ? {
+    //           ...r,
+    //           checkInDate: checkIn,
+    //           checkOutDate: checkOut,
+    //           roomType: roomType,
+    //         }
+    //       : r
+    //   )
+    // );
+    // setModifyDialogId(null);
   };
 
+  if (isLoading) return <Loader />;
   return (
     <div className="min-h-screen bg-background">
       {/* Page Header */}
@@ -526,13 +492,13 @@ export default function Reservations() {
               <div className="h-1 w-1 rounded-full bg-primary" />
               <h2 className="text-2xl font-bold">Upcoming Reservations</h2>
               <span className="ml-auto text-sm text-muted-foreground">
-                {upcomingReservations.length} reservation{upcomingReservations.length !== 1 ? 's' : ''}
+                {upcomingReservations?.length} reservation{upcomingReservations?.length !== 1 ? 's' : ''}
               </span>
             </div>
 
-            {upcomingReservations.length > 0 ? (
+            {(upcomingReservations ?? []).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {upcomingReservations.map((reservation) => (
+                {(upcomingReservations ?? []).map((reservation) => (
                   <ReservationCard
                     key={reservation.id}
                     reservation={reservation}
@@ -555,18 +521,18 @@ export default function Reservations() {
           </section>
 
           {/* Past Reservations */}
-          {pastReservations.length > 0 && (
+          {(pastReservations ?? []).length > 0 && (
             <section>
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-1 w-1 rounded-full bg-muted-foreground" />
                 <h2 className="text-2xl font-bold">Past Reservations</h2>
                 <span className="ml-auto text-sm text-muted-foreground">
-                  {pastReservations.length} reservation{pastReservations.length !== 1 ? 's' : ''}
+                  {(pastReservations ?? []).length} reservation{(pastReservations ?? []).length !== 1 ? 's' : ''}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {pastReservations.map((reservation) => (
+                {(pastReservations ?? []).map((reservation) => (
                   <ReservationCard
                     key={reservation.id}
                     reservation={reservation}
@@ -581,11 +547,11 @@ export default function Reservations() {
       </div>
 
       {/* Cancel Confirmation Dialog */}
-      {cancelDialogId !== null && (
+      {/* {cancelDialogId !== null && (
         <ConfirmationDialog
           title="Cancel Reservation?"
           description={`Are you sure you want to cancel reservation ${
-            reservations.find((r) => r.id === cancelDialogId)?.confirmationNumber
+            reservations?.find((r) => r.id === cancelDialogId)?.confirmationNumber
           }? This action cannot be undone.`}
           confirmText="Yes, Cancel Reservation"
           cancelText="Keep Reservation"
@@ -593,18 +559,18 @@ export default function Reservations() {
           onConfirm={() => handleCancelReservation(cancelDialogId)}
           onCancel={() => setCancelDialogId(null)}
         />
-      )}
+      )} */}
 
       {/* Modify Reservation Dialog */}
-      {modifyDialogId !== null && (
+      {/* {modifyDialogId !== null && (
         <ModifyReservationDialog
-          reservation={reservations.find((r) => r.id === modifyDialogId)!}
+          reservation={reservations?.find((r) => r.id === modifyDialogId)!}
           onClose={() => setModifyDialogId(null)}
           onConfirm={(checkIn, checkOut, roomType) =>
             handleModifyReservation(modifyDialogId, checkIn, checkOut, roomType)
           }
         />
-      )}
+      )} */}
     </div>
   );
 }

@@ -12,7 +12,7 @@ export const reservationApi = baseApi.injectEndpoints({
     }),
     createReservation: builder.mutation<Reservation, Partial<Reservation>>({
         query: (newReservation) => ({
-            url: '/reservations',
+            url: '/reservations/new',
             method: 'POST',
             body: newReservation,
         }),
