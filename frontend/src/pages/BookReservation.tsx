@@ -48,12 +48,6 @@ export default function BookReservation() {
       : skipToken
   );
 
-  useEffect(() => {
-    console.log('Available Rooms:', availableRooms);
-  }, [availableRooms]);
-
-  
-
   // handler for Go To Checkout button
   function handleGoToCheckout() {
     setShowCheckout(true)

@@ -8,8 +8,12 @@ import { useAttachPaymentMethodMutation } from '@/features/transaction/transacti
 import { useGetUserPaymentMethodsQuery } from '@/features/user/userApi';
 import { useCreateReservationMutation } from '@/features/reservation/reservationApi';
 import type { PaymentMethod } from '@/types/types';
+import { useNavigate } from 'react-router';
 
 export default function PaymentForm() {
+    
+  const navigate = useNavigate();
+  
   // stripe hooks
   const stripe = useStripe();
   const elements = useElements();
@@ -20,7 +24,7 @@ export default function PaymentForm() {
   const [attachPaymentMethod, { isLoading: isAttaching, error: attachError }] = useAttachPaymentMethodMutation(); 
 
   // RTK Query mutation to create reservation
-  const [createReservation] = useCreateReservationMutation();
+  const [createReservation, { isLoading: isBooking }] = useCreateReservationMutation();
 
   const checkoutData = useAppSelector(state => state.reservations.checkoutData);
   
@@ -33,6 +37,7 @@ export default function PaymentForm() {
   
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [showAddNew, setShowAddNew] = useState(false);
+  const [isRefreshingMethod, setIsRefreshingMethod] = useState(false);
 
   // handle payment method selection
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -74,7 +79,7 @@ export default function PaymentForm() {
     
       try {
         await createReservation(reservation).unwrap();
-        // Optionally handle success (e.g., redirect or show message)
+        navigate('/reservations');
       } catch (err) {
         console.error('Failed to create reservation:', err);
       }
@@ -101,23 +106,27 @@ export default function PaymentForm() {
     // attach payment method to user
     try {
       await attachPaymentMethod({ userId: userId ?? '', paymentMethodId: paymentMethod.id }).unwrap();
-      // Refetch payment methods and select the new one
+      setIsRefreshingMethod(true);
       const refreshed = await refetchPaymentMethods();
       const newMethod = refreshed.data?.find((pm: PaymentMethod) => pm.paymentMethodId === paymentMethod.id) || null;
       setSelectedMethod(newMethod);
       setShowAddNew(false);
+      setIsRefreshingMethod(false);
     } catch (err) {
+      setIsRefreshingMethod(false);
       return;
     }
   };
+
+  if (isBooking || isLoadingMethods || isAttaching || isRefreshingMethod) {
+    return <Loader />;
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label className="block text-sm font-medium mb-2">Payment Method</label>
-        {isLoadingMethods ? (
-          <Loader />
-        ) : paymentMethods && paymentMethods.length > 0 ? (
+        {paymentMethods && paymentMethods.length > 0 ? (
           <select
             className="w-full px-3 py-2 h-10 border border-input rounded-md bg-background text-foreground text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all mb-2"
             value={selectedMethod?.paymentMethodId || ''}
@@ -151,9 +160,11 @@ export default function PaymentForm() {
       <Button
         type="submit"
         className="w-full cursor-pointer"
-        disabled={isAttaching || (!showAddNew && !selectedMethod)}
+        disabled={isAttaching || isRefreshingMethod || (!showAddNew && !selectedMethod)}
       >
-        {showAddNew ? (isAttaching ? 'Adding...' : 'Add Payment Method') : 'Book Reservation'}
+        {showAddNew
+          ? (isAttaching || isRefreshingMethod ? 'Adding...' : 'Add Payment Method')
+          : 'Book Reservation'}
       </Button>
     </form>
   );
