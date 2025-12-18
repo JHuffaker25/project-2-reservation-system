@@ -3,6 +3,7 @@ package com.skillstorm.backend.Controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.skillstorm.backend.DTOs.AppUserResponseDTO;
 import com.skillstorm.backend.Models.AppUser;
 import com.skillstorm.backend.Services.AppUserService;
 import com.stripe.exception.StripeException;
@@ -41,6 +43,20 @@ public class AppUserController {
         return ResponseEntity.ok(users);
     }
 
+    // In AppUserController.java - add GET endpoint
+    @GetMapping("/{id}")
+    public ResponseEntity<AppUserResponseDTO> getUserById(@PathVariable String id) {
+    try {
+        AppUser user = appUserService.getUserById(id);
+        return ResponseEntity.ok(new AppUserResponseDTO(user.getId(), user.getEmail(), 
+        user.getRole(), user.getFirstName(), user.getLastName(), user.getPhone(), 
+        user.getPreferences()));
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.notFound().build();
+    } catch (Exception e) {
+        return ResponseEntity.internalServerError().build();
+    }
+}
     //GET payment methods for a user
     @GetMapping("/{userId}/payment-methods")
     public ResponseEntity<Object> getPaymentMethods(@PathVariable String userId) {
