@@ -43,13 +43,13 @@ public class RoomController {
 
     //GET room by ID
     @GetMapping("/{id}")
-    public ResponseEntity<List<Room>> findRoomById(@PathVariable String id){
+    public ResponseEntity<Room> findRoomById(@PathVariable String id){
         try {
-            List <Room> rooms = roomService.findRoomById(id);
-            return new ResponseEntity<>(rooms, HttpStatus.OK);
-            
+            Room room = roomService.findRoomById(id);
+            return new ResponseEntity<>(room, HttpStatus.OK);
+                    
         }catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().header("Error", "There were no room matches found").body(null);
+            return ResponseEntity.badRequest().header("Error", "No room found with id: " + id).body(null);
 
         }catch (Exception e) {
             return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
@@ -57,6 +57,7 @@ public class RoomController {
     }
 
     //GET available rooms by dates, with optional typeId as path variable (/{typeId}/available)
+
     @GetMapping({"/available", "/{typeId}/available"})
     public ResponseEntity<List<Room>> getAvailableRooms(
             @RequestParam List<String> dates,
@@ -72,9 +73,8 @@ public class RoomController {
             return ResponseEntity.badRequest().header("Error", "Invalid request: " + e.getMessage()).body(null);
         }
     }
-
-
-
+    
+   
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
 
     //CREATE new room (Fields required: roomNumber, typeId, status, datesReserved)

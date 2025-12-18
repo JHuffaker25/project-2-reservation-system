@@ -2,11 +2,13 @@ package com.skillstorm.backend.Services;
 
 import com.skillstorm.backend.Models.Room;
 import com.skillstorm.backend.Repositories.RoomRepository;
-import org.springframework.stereotype.Service;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class RoomService {
@@ -19,13 +21,6 @@ public class RoomService {
     }
 
 
-// POST and DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
-
-    // Create a new room (all fields required)
-    
-
-    
-
 
     
 //GET METHODS////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,14 +31,13 @@ public class RoomService {
     }
 
     //GET room by ID
-    public List<Room> findRoomById(String id) {
-        Room room = roomRepository.findById(id).orElse(null);
-
-        if (room != null) {
-            return Collections.singletonList(room);
-        } else {
+    public Room findRoomById(String id) {
+        Optional<Room> roomOpt = roomRepository.findById(id);
+        if (roomOpt.isEmpty()) {
             throw new IllegalArgumentException("No room found with id: " + id);
         }
+        return roomOpt.get();
+    
     }
 
     // GET available rooms by dates and optional typeId (case-insensitive)
@@ -72,7 +66,7 @@ public class RoomService {
 
 
 
-//POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
+//POST and PUT METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
     //CREATE new room
     public Room createRoom(Room room) {
@@ -80,6 +74,11 @@ public class RoomService {
         if (room.getRoomNumber() == null || room.getTypeId() == null || room.getStatus() == null || room.getDatesReserved() == null) {
             throw new IllegalArgumentException("Missing required fields: roomNumber, typeId, status, datesReserved");
         }
+        return roomRepository.save(room);
+    }
+
+    //UPDATE room (for updating datesReserved)
+    public Room saveRoom(Room room) {
         return roomRepository.save(room);
     }
 
@@ -94,4 +93,7 @@ public class RoomService {
         }
         roomRepository.deleteById(id);
     }
+
+
+ 
 }

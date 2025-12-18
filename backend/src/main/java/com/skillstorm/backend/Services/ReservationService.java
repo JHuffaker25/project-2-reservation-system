@@ -1,8 +1,9 @@
 package com.skillstorm.backend.Services;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import com.skillstorm.backend.DTOs.CreateReservationRequest;
 import com.skillstorm.backend.DTOs.UpdateReservationRequest;
 import com.skillstorm.backend.Models.AppUser;
 import com.skillstorm.backend.Models.Reservation;
+import com.skillstorm.backend.Models.Room;
 import com.skillstorm.backend.Repositories.AppUserRepository;
 import com.skillstorm.backend.Repositories.ReservationRepository;
 import com.stripe.exception.StripeException;
@@ -22,12 +24,15 @@ public class ReservationService {
     private final StripeService stripeService;
     private final AppUserRepository appUserRepository;
     private final TransactionService transactionService;
+    private final RoomService roomService;
+
     public ReservationService(ReservationRepository reservationRepository, StripeService stripeService, 
-                              AppUserRepository appUserRepository, TransactionService transactionService) {
+                              AppUserRepository appUserRepository, TransactionService transactionService, RoomService roomService) {
         this.reservationRepository = reservationRepository;
         this.stripeService = stripeService;
         this.appUserRepository = appUserRepository;
         this.transactionService = transactionService;
+        this.roomService = roomService;
     }
 
 
@@ -65,6 +70,22 @@ public class ReservationService {
             throw new IllegalArgumentException("Check-in date must be before check-out date");
         }
 
+        //Check if the given room that we are attempting to reserve is available
+        // Room does not have any date between the check-in and check-out date in datesReserved
+        Room room = roomService.findRoomById(request.roomId());
+        List<LocalDate> datesReserved = room.getDatesReserved();
+
+        // Check if any date in the reservation range is already reserved
+        // Note: checkOut date is excluded (room is available for new check-ins on checkout day)
+        //Could be made more optimal in real-world application, but fine for our purposes
+        LocalDate date = request.checkIn();
+        while (date.isBefore(request.checkOut())) {
+            if (datesReserved != null && datesReserved.contains(date)) {
+                throw new IllegalArgumentException("Room is not available for the selected dates");
+            }
+            date = date.plusDays(1);
+        }
+
         //Check if numGuests is valid
         if (request.numGuests() <= 0) {
             throw new IllegalArgumentException("Number of guests must be greater than 0");
@@ -74,9 +95,6 @@ public class ReservationService {
         if(request.totalPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Total price must be greater than 0");
         }
-
-        //For now, we won't check availability of room or it's existence, but it will need to be implemented.
-
 
         // Map DTO to Reservation entity
         Reservation reservation = new Reservation();
@@ -107,6 +125,17 @@ public class ReservationService {
 
         //Create a corresponding transaction with the reservation id
         transactionService.createTransactionfromPaymentIntent(paymentIntent, saved.getId(), request.userId());
+
+        // Update the room's datesReserved with the newly reserved dates
+        List<LocalDate> updatedDatesReserved = new ArrayList<>(datesReserved != null ? datesReserved : new ArrayList<>());
+        LocalDate reservedDate = request.checkIn();
+        while (reservedDate.isBefore(request.checkOut())) {
+            updatedDatesReserved.add(reservedDate);
+            reservedDate = reservedDate.plusDays(1);
+        }
+        room.setDatesReserved(updatedDatesReserved);
+        roomService.saveRoom(room);
+
         return saved;
     }
 
@@ -196,6 +225,11 @@ public class ReservationService {
             throw new IllegalArgumentException("Reservation not found");
         }
         return reservationOpt.get();
+    }
+
+    public Reservation getReservationById(String id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getReservationById'");
     }
 
 }
