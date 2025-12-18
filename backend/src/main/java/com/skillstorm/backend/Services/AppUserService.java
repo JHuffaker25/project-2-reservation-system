@@ -37,6 +37,12 @@ public class AppUserService implements UserDetailsService {
         return appUserRepository.findAll();
     }
 
+    //Returns user by ID, and use DTOR
+    public AppUser getUserById(String id) {
+        AppUser user = findUserOrThrow(id);
+        return user;
+    }
+
     public List<PaymentMethod> getPaymentMethods(String userId) throws StripeException {
         AppUser user = findUserOrThrow(userId);
         return stripeService.listPaymentMethods(user.getStripeCustomerId());
@@ -120,6 +126,9 @@ public class AppUserService implements UserDetailsService {
         }
         return user.get();
     }
+
+
+
 
     
 }
