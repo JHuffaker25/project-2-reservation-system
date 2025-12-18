@@ -39,7 +39,7 @@ public class SecurityConfig {
                 /*MAY CHANGE ROLES -->*/.requestMatchers("/users/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/users/delete/{id}").hasRole("ADMIN")
                 .requestMatchers("/reservations/all").hasRole("ADMIN")
-                /*MAY CHANGE ROLES -->*/.requestMatchers("/reservations/user/{userId}").hasRole("ADMIN")
+                /*MAY CHANGE ROLES -->*/.requestMatchers("/reservations/user/{userId}").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/reservations/new").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/reservations/{id}/check-in").hasRole("ADMIN")
                 .requestMatchers("/reservations/{id}/cancel").hasAnyRole("ADMIN", "CUSTOMER")
