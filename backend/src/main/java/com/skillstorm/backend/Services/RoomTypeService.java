@@ -8,14 +8,23 @@ import org.springframework.stereotype.Service;
 import com.skillstorm.backend.Models.RoomType;
 import com.skillstorm.backend.Repositories.RoomTypeRepository;
 
+import com.skillstorm.backend.Models.Reservation;
+import com.skillstorm.backend.Models.Room;
+import com.skillstorm.backend.Repositories.ReservationRepository;
+import com.skillstorm.backend.Repositories.RoomRepository;
+
 @Service
 public class RoomTypeService {
 
 //Repo injection
     private final RoomTypeRepository roomTypeRepository;
+    private final ReservationRepository reservationRepository;
+    private final RoomRepository roomRepository;
 
-    public RoomTypeService(RoomTypeRepository roomTypeRepository) {
+    public RoomTypeService(RoomTypeRepository roomTypeRepository, ReservationRepository reservationRepository, RoomRepository roomRepository) {
         this.roomTypeRepository = roomTypeRepository;
+        this.reservationRepository = reservationRepository;
+        this.roomRepository = roomRepository;
     }
 
 
@@ -36,6 +45,22 @@ public class RoomTypeService {
         } else {
             throw new IllegalArgumentException("No room type found with id: " + id);
         }
+    }
+
+    // Get RoomType by reservationId
+    public RoomType getRoomTypeByReservationId(String reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new IllegalArgumentException("Reservation not found for id: " + reservationId));
+
+        String roomId = reservation.getRoomId();
+
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new IllegalArgumentException("Room not found for id: " + roomId));
+
+        String typeId = room.getTypeId();
+
+        return roomTypeRepository.findById(typeId)
+            .orElseThrow(() -> new IllegalArgumentException("RoomType not found for id: " + typeId));
     }
 
 

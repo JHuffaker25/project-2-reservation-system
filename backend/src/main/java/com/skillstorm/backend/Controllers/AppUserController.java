@@ -19,6 +19,7 @@ import com.skillstorm.backend.Models.AppUser;
 import com.skillstorm.backend.Services.AppUserService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentMethod;
+import com.skillstorm.backend.DTOs.AppUserResponseDTO;
 
 @RestController
 @RequestMapping("/users")
@@ -29,7 +30,7 @@ public class AppUserController {
     public AppUserController(AppUserService appUserService) {
         this.appUserService = appUserService;
     }
-
+    
 
 
 //GET MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,6 +57,28 @@ public class AppUserController {
             return ResponseEntity.badRequest().header("Error", "Invalid user data: " + e.getMessage()).build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+        }
+    }
+
+    // GET user DTO by email, returns AppUserResponseDTO (all fields except password)
+    @GetMapping("/by-email")
+    public ResponseEntity<Object> getUserByEmail(@RequestParam String email) {
+        try {
+            AppUser user = appUserService.getUserByEmail(email);
+            AppUserResponseDTO dto = new AppUserResponseDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhone(),
+                user.getPreferences()
+            );
+            return ResponseEntity.ok(dto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "User not found: " + e.getMessage()).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
         }
     }
 

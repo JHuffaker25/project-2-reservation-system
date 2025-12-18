@@ -19,6 +19,7 @@ import com.skillstorm.backend.Models.Reservation;
 import com.skillstorm.backend.Services.ReservationService;
 import com.stripe.exception.StripeException;
 
+
 @RestController
 @RequestMapping("/reservations")
 public class ReservationController {
@@ -28,6 +29,8 @@ public class ReservationController {
     public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
+    
+
 
 //GET MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -132,7 +135,7 @@ public class ReservationController {
 
 /*POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
 
-    //CREATE new reservation (Required fields: resNumber, userId, roomId, checkIn, checkOut, numGuests, status, totalPrice)
+    //CREATE new reservation (Required fields: userId, roomId, checkIn, checkOut, numGuests, status, totalPrice)
     @PostMapping("/new")
     public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation) {
          try {

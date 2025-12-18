@@ -240,10 +240,10 @@ public class ReservationService {
     //CREATE new reservation
     public Reservation createReservation(Reservation reservation) {
         // Validate all required fields from the Reservation model
-        if (reservation.getResNumber() == null || reservation.getUserId() == null || reservation.getRoomId() == null ||
+        if (reservation.getUserId() == null || reservation.getRoomId() == null ||
             reservation.getCheckIn() == null || reservation.getCheckOut() == null || reservation.getNumGuests() == null ||
             reservation.getStatus() == null || reservation.getTotalPrice() == null) {
-            throw new IllegalArgumentException("Missing required fields: resNumber, userId, roomId, checkIn, checkOut, numGuests, status, totalPrice");
+            throw new IllegalArgumentException("Missing required fields: userId, roomId, checkIn, checkOut, numGuests, status, totalPrice");
         }
         return reservationRepository.save(reservation);
     }

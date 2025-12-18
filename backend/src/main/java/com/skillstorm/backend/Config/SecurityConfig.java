@@ -34,23 +34,26 @@ public class SecurityConfig {
 
                 //SECURED ROUTES
                 .requestMatchers("/users/all").hasRole("ADMIN")
-                .requestMatchers("/users/create").hasAnyRole("ADMIN", "CUSTOMER") //Maybe remove this
-                .requestMatchers("/users/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER")
+                /*MAY CHANGE ROLES -->*/.requestMatchers("/users/by-email").hasAnyRole("ADMIN", "CUSTOMER")
+                /*MAY NOT NEED THIS -->*/.requestMatchers("/users/create").hasAnyRole("ADMIN", "CUSTOMER") 
+                /*MAY CHANGE ROLES -->*/.requestMatchers("/users/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/users/delete/{id}").hasRole("ADMIN")
                 .requestMatchers("/reservations/all").hasRole("ADMIN")
+                /*MAY CHANGE ROLES -->*/.requestMatchers("/reservations/user/{userId}").hasRole("ADMIN")
                 .requestMatchers("/reservations/new").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/reservations/{id}/check-in").hasRole("ADMIN")
                 .requestMatchers("/reservations/{id}/cancel").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/reservations/delete/{id}").hasRole("ADMIN")
                 .requestMatchers("/rooms/new").hasRole("ADMIN")
                 .requestMatchers("/rooms/delete/{id}").hasRole("ADMIN")
+                /*MAY CHANGE ROLES -->*/.requestMatchers("/room-types/by-reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") 
                 .requestMatchers("/room-types/create").hasRole("ADMIN")
                 .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN")
                 .requestMatchers("/transactions/all").hasRole("ADMIN")
                 .requestMatchers("/transactions/new").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN")
 
-                //ALL OTHER ROUTES
+                //ALL OTHER ROUTES PERMITTED
                 .anyRequest().permitAll();
                 
                 //TESTING ROUTES

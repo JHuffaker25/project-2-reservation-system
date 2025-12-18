@@ -49,6 +49,12 @@ public class AppUserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
+    // Get user by email for AppUser DTO in controller
+    public AppUser getUserByEmail(String email) {
+        return appUserRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+    }
+
 
 
 //POST METHODS////////////////////////////////////////////////////////////////////////////////////////////

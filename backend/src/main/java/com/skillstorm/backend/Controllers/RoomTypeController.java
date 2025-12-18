@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.skillstorm.backend.Models.RoomType;
 import com.skillstorm.backend.Services.RoomTypeService;
 
+
 @RestController
 @RequestMapping("/room-types")
 public class RoomTypeController {
@@ -49,6 +50,17 @@ public class RoomTypeController {
 
         }catch (Exception e) {
             return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
+        }
+    }
+
+    // GET room type by reservationId
+    @GetMapping("/by-reservation/{reservationId}")
+    public ResponseEntity<RoomType> getRoomTypeByReservationId(@PathVariable String reservationId) {
+        try {
+            RoomType roomType = roomTypeService.getRoomTypeByReservationId(reservationId);
+            return ResponseEntity.ok(roomType);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
