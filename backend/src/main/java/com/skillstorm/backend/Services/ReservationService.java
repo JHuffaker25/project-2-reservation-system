@@ -30,11 +30,21 @@ public class ReservationService {
         this.transactionService = transactionService;
     }
 
+
+
 //GET METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Get all reservations
     public List<Reservation> getAllReservations() {
         return reservationRepository.findAll();
     }
+
+    // Get reservations by userId
+    public List<Reservation> getReservationsByUserId(String userId) {
+        return reservationRepository.findByUserId(userId);
+    }
+
+
 
 //POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
 

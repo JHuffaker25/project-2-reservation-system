@@ -65,7 +65,6 @@ public class TransactionController {
     }
     
     //GET transaction by RESERVATION ID
-    
     @GetMapping("reservation/{reservationId}")
     public ResponseEntity<Transaction> getTransactionByReservationId(@PathVariable String reservationId) {
         try {
@@ -78,9 +77,10 @@ public class TransactionController {
         }
     }
     
+
+
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
 
-    
     /* 
     Probably makes sense to not have this endpoint, as transactions are created automatically when a payment intent is created.
     //CREATE new transaction (Required fields: transactionId, reservationId, amount, paymentMethod, transactionDate)
@@ -96,6 +96,7 @@ public class TransactionController {
         }
     }
 */
+
 
 
 //DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////

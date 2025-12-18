@@ -37,6 +37,15 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
+    // Get reservations by userId
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Reservation>> getReservationsByUserId(@PathVariable String userId) {
+        List<Reservation> reservations = reservationService.getReservationsByUserId(userId);
+        return ResponseEntity.ok(reservations);
+    }
+
+
+
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create reservation with payment authorization (holds funds)
@@ -54,6 +63,8 @@ public class ReservationController {
         }
     }
 
+
+    
 //PUT MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     // Check-in: captures the held payment
