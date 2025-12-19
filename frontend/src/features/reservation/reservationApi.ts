@@ -10,6 +10,13 @@ export const reservationApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: Reservation[]) => response,
     }),
+    getUserReservations: builder.query<Reservation[], string>({
+      query: (userid) => ({
+        url: `/reservations/user/${userid}`,
+        method: 'GET',
+      }),
+      transformResponse: (response: Reservation[]) => response,
+    }),
     createReservation: builder.mutation<Reservation, Partial<Reservation>>({
         query: (newReservation) => ({
             url: '/reservations/new',
@@ -22,4 +29,4 @@ export const reservationApi = baseApi.injectEndpoints({
   overrideExisting: false,
 });
 
-export const { useGetReservationsQuery, useCreateReservationMutation } = reservationApi;
+export const { useGetReservationsQuery, useGetUserReservationsQuery, useCreateReservationMutation } = reservationApi;
