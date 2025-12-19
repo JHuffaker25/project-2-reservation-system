@@ -8,12 +8,11 @@ import { authApi } from '@/features/auth/authApi'
 
 export const store = configureStore({
     reducer: {
+        [baseApi.reducerPath]: baseApi.reducer,
         theme: themeReducer,
         auth: authReducer,
         roomTypes: roomTypeReducer,
         reservations: reservationReducer,
-        [baseApi.reducerPath]: baseApi.reducer,
-        [authApi.reducerPath]: authApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(baseApi.middleware),
