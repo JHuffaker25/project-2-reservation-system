@@ -15,12 +15,24 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Link } from "react-router"
+import { useAppDispatch } from "@/app/hooks"
+import { login } from "../authSlice"
 
 export function SigninForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+    const dispatch = useAppDispatch();
+
     const googleLoginUri = import.meta.env.VITE_GOOGLE_LOGIN_URI;
+
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        dispatch(login({
+            email: (event.currentTarget.elements.namedItem("email") as HTMLInputElement).value,
+            password: (event.currentTarget.elements.namedItem("password") as HTMLInputElement).value,
+        }));
+    }
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
@@ -31,7 +43,7 @@ export function SigninForm({
             </CardDescription>
             </CardHeader>
             <CardContent>
-            <form>
+            <form onSubmit={handleSubmit}>
                 <FieldGroup>
                 <Field>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
