@@ -1,37 +1,22 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { User } from "./authSlice";
-
-export interface LoginRequest {
-    email: string,
-    password: string,
-}
+import { baseApi } from "@/app/baseApi";
 
 export interface AuthResponse {
     user: User,
     token: string,
 }
 
-export const authApi = createApi({
-    reducerPath: "authApi",
-    baseQuery: fetchBaseQuery({
-        baseUrl: "/api",
-    }),
+export const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        login: builder.mutation<AuthResponse, LoginRequest>({
-            query: (credentials) => ({
-                url: "/auth/login",
-                method: "POST",
-                body: credentials,
-            }),
-        }),
 
-        logout: builder.mutation<void, void>({
+        // get the user details from the server. credentials are sent via baseQuery headers
+        getUserData: builder.query<User, void>({
             query: () => ({
-                url: "/auth/logout",
-                method: "POST",
+                url: "/auth/login", // TODO: UPDATE ENDPOINT
+                method: "GET",
             }),
         }),
     }),
 });
 
-export const { useLoginMutation, useLogoutMutation } = authApi;
+export const { useGetUserDataQuery } = authApi;
