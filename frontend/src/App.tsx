@@ -13,7 +13,7 @@ import BookReservation from './pages/BookReservation'
 import { ProtectedLayout } from './components/protected-layout'
 import { useEffect } from 'react'
 import { useAppDispatch } from './app/hooks'
-import { loginSuccess, startAuth } from './features/auth/authSlice'
+// import { loginSuccess, startAuth } from './features/auth/authSlice'
 
 function App() {
 
@@ -23,24 +23,24 @@ function App() {
         id: "69406ff27b0ba5176cd88e5e",
         email: "test@test.com",
         name: "Test User",
-        role: "user",
+        role: "admin",
         preferences: {
             emailNotifications: true,
             darkMode: false,
         }
     };
 
-    useEffect(() => {
-        dispatch(startAuth());
+    // useEffect(() => {
+    //     dispatch(startAuth());
 
-        // const timeout = setTimeout(() => {
-            //  dispatch(loginSuccess(fakeUser));
-            // dispatch(setAuthResolved());
-        // }, 500);
+    //     // const timeout = setTimeout(() => {
+    //         //  dispatch(loginSuccess(fakeUser));
+    //         // dispatch(setAuthResolved());
+    //     // }, 500);
 
-        dispatch(loginSuccess(fakeUser))
-        // return () => clearTimeout(timeout);
-    }, [dispatch]);
+    //     dispatch(loginSuccess(fakeUser))
+    //     // return () => clearTimeout(timeout);
+    // }, [dispatch]);
 
     return (
         <Routes>
