@@ -1,11 +1,12 @@
 package com.skillstorm.backend.DTOs;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record UpdateReservationRequest(
-    String id,
     LocalDate checkIn,
     LocalDate checkOut,
-    Integer numGuests
+    Integer numGuests,
+    BigDecimal totalPrice
 ) {}
     

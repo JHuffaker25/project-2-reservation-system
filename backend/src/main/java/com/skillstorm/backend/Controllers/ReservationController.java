@@ -100,7 +100,7 @@ public class ReservationController {
         }
     }
 
-    //Update reservation (Required fields: id, checkIn, checkOut, numGuests)
+    //Update reservation (Required fields: checkIn, checkOut, numGuests, totalPrice)
     @PutMapping("/{id}/update")
     public ResponseEntity<Object> updateReservation(@PathVariable String id, @RequestBody UpdateReservationRequest request) {
         try {

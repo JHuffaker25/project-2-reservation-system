@@ -12,6 +12,7 @@ import com.skillstorm.backend.DTOs.UpdateReservationRequest;
 import com.skillstorm.backend.Models.AppUser;
 import com.skillstorm.backend.Models.Reservation;
 import com.skillstorm.backend.Models.Room;
+import com.skillstorm.backend.Models.Transaction;
 import com.skillstorm.backend.Repositories.AppUserRepository;
 import com.skillstorm.backend.Repositories.ReservationRepository;
 import com.stripe.exception.StripeException;
@@ -177,7 +178,7 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
-    //Update reservation (Required fields: id, checkIn, checkOut, numGuests)
+    //Update reservation (Required fields: checkIn, checkOut, numGuests, totalPrice)
     public Reservation updateReservation(String id, UpdateReservationRequest request) throws StripeException {
         Reservation reservation = findReservationOrThrow(id);
 
@@ -194,14 +195,88 @@ public class ReservationService {
             throw new IllegalArgumentException("Reservation is not pending");
         }
 
-        //Room availabliity check here
+        //Check that price is valid
+        if (request.totalPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Total price must be greater than 0");
+        }
 
+        // Get room and check availability BEFORE updating reservation
+        Room room = roomService.findRoomById(reservation.getRoomId());
+        List<LocalDate> datesReserved = new ArrayList<>(room.getDatesReserved() != null ? room.getDatesReserved() : new ArrayList<>());
+        
+        // Remove old reservation dates from the list to check availability
+        LocalDate oldDate = reservation.getCheckIn();
+        while (oldDate.isBefore(reservation.getCheckOut())) {
+            datesReserved.remove(oldDate);
+            oldDate = oldDate.plusDays(1);
+        }
+
+        // Verify that the new checkin and checkout dates are available
+        LocalDate date = request.checkIn();
+        while (date.isBefore(request.checkOut())) {
+            if (datesReserved.contains(date)) {
+                throw new IllegalArgumentException("Room is not available for the selected dates");
+            }
+            date = date.plusDays(1);
+        }
+
+        // Update reservation fields
         reservation.setCheckIn(request.checkIn());
         reservation.setCheckOut(request.checkOut());
         reservation.setNumGuests(request.numGuests());
+        reservation.setTotalPrice(request.totalPrice());
+        
+        //STRIPE LOGIC///
 
-        //Update the corresponding transaction to UPDATED
-        transactionService.captureTransaction(reservation.getPaymentIntentId());
+        // Get user for Stripe customer ID and email
+        Optional<AppUser> userOpt = appUserRepository.findById(reservation.getUserId());
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+        AppUser user = userOpt.get();
+
+        // Cancel old PaymentIntent and create new one with updated amount
+        String oldPaymentIntentId = reservation.getPaymentIntentId();
+        PaymentIntent oldPaymentIntent = PaymentIntent.retrieve(oldPaymentIntentId);
+        String paymentMethodId = oldPaymentIntent.getPaymentMethod();
+        
+        if (paymentMethodId == null) {
+            throw new IllegalArgumentException("Cannot update reservation: original payment method not found");
+        }
+        
+        // Cancel the old PaymentIntent
+        stripeService.cancelPayment(oldPaymentIntentId);
+        
+        // Create new PaymentIntent with updated amount
+        Long amountInCents = request.totalPrice().multiply(BigDecimal.valueOf(100)).longValue();
+        PaymentIntent newPaymentIntent = stripeService.createPaymentIntent(
+                amountInCents,
+                "usd",
+                user.getStripeCustomerId(),
+                paymentMethodId,
+                user.getEmail());
+        
+        // Update reservation with new PaymentIntent ID
+        reservation.setPaymentIntentId(newPaymentIntent.getId());
+        
+        // Update transaction with new PaymentIntent ID and amount
+        Transaction transaction = transactionService.getTransactionByReservationId(reservation.getId());
+        transaction.setPaymentIntentId(newPaymentIntent.getId());
+        transaction.setAmount(amountInCents);
+        transaction.setTransactionStatus(newPaymentIntent.getStatus());
+        transactionService.updateTransaction(transaction);
+
+        // Add new reservation dates to the list 
+        LocalDate addDate = request.checkIn();
+        while (addDate.isBefore(request.checkOut())) {
+            if (!datesReserved.contains(addDate)) {
+                datesReserved.add(addDate);
+            }
+            addDate = addDate.plusDays(1);
+        }
+        
+        room.setDatesReserved(datesReserved);
+        roomService.saveRoom(room);
 
         return reservationRepository.save(reservation);
     }

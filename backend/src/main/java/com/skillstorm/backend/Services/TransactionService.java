@@ -85,20 +85,16 @@ public class TransactionService {
         return transactionRepository.save(tx);
     }
 
-    
-/* 
-    //CREATE new transaction **May delete**
-    public Transaction createTransaction(Transaction transaction) {
-        // Validate all required fields from the Transaction model
-        if (transaction.getPaymentIntentId() == null || transaction.getTransactionStatus() == null ||
-            transaction.getAmount() == null || transaction.getCurrency() == null ||
-            transaction.getAuthorizedAt() == null || transaction.getCapturedAt() == null) {
-            throw new IllegalArgumentException("Missing required fields: paymentIntentId, transactionStatus, amount, currency, authorizedAt, capturedAt");
-        }
+
+//PUT METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //UPDATE a transaction amount (used when reservation is updated)
+    public Transaction updateTransaction(Transaction transaction) {
+        transaction.setAuthorizedAt(LocalDateTime.now());
         return transactionRepository.save(transaction);
     }
-*/
 
+    
 
 //DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -115,14 +111,4 @@ public class TransactionService {
         transactionRepository.save(tx);
     }
 
-/* 
-    //DELETE a transaction by ID **May delete**
-    public void deleteTransaction(String id) {
-        if (!transactionRepository.existsById(id)) {
-            throw new IllegalArgumentException("Transaction with id " + id + " does not exist");
-        }
-        transactionRepository.deleteById(id);
-    }
-}
-*/
 }
