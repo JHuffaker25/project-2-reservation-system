@@ -77,9 +77,10 @@ public class AppUserController {
     }
 
     // GET user DTO by email, returns AppUserResponseDTO (all fields except password)
-    @GetMapping("/by-email")
-    public ResponseEntity<Object> getUserByEmail(@RequestParam String email) {
+    @GetMapping("/me")
+    public ResponseEntity<Object> getUserByEmail(org.springframework.security.core.Authentication authentication) {
         try {
+            String email = authentication.getName();
             AppUser user = appUserService.getUserByEmail(email);
             AppUserResponseDTO dto = new AppUserResponseDTO(
                 user.getId(),
