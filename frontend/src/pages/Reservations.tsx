@@ -46,6 +46,13 @@ const ReservationCard = ({
   onCancel: (id: string) => void;
   onModify: (id: string) => void;
 }) => {
+  // Format date as YYYY-MM-DD from ISO string (UTC, no timezone shift)
+  function formatDateUTC(dateString: string) {
+    if (!dateString) return '';
+    return dateString.slice(0, 10);
+  }
+  const checkInDateStr = formatDateUTC(reservation.checkIn);
+  const checkOutDateStr = formatDateUTC(reservation.checkOut);
   const checkInDate = new Date(reservation.checkIn);
   const checkOutDate = new Date(reservation.checkOut);
   const nights = Math.ceil(
@@ -78,11 +85,11 @@ const ReservationCard = ({
           <div>
             <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Check-in <span className=" font-medium text-sm">(3:00 PM)</span></p>
             
-            <p className="font-semibold">{checkInDate.toLocaleDateString()}</p>
+            <p className="font-semibold">{checkInDateStr}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Check-out <span className=" font-medium text-sm">(12:00 PM)</span></p>
-            <p className="font-semibold">{checkOutDate.toLocaleDateString()}</p>
+            <p className="font-semibold">{checkOutDateStr}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Duration</p>
