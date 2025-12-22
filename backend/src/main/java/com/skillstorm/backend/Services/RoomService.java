@@ -1,14 +1,15 @@
 package com.skillstorm.backend.Services;
 
-import com.skillstorm.backend.Models.Room;
-import com.skillstorm.backend.Repositories.RoomRepository;
-
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+
+import com.skillstorm.backend.Models.Room;
+import com.skillstorm.backend.Repositories.RoomRepository;
 
 @Service
 public class RoomService {
@@ -42,6 +43,22 @@ public class RoomService {
 
     // GET available rooms by dates and optional typeId (case-insensitive)
     public List<Room> findAvailableRooms(List<LocalDate> requestedDates, String typeId) {
+        // Expand date range if only checkIn and checkOut are provided
+        final List<LocalDate> datesToCheck;
+        if (requestedDates != null && requestedDates.size() == 2) {
+            LocalDate checkIn = requestedDates.get(0);
+            LocalDate checkOut = requestedDates.get(1);
+            // Generate all dates in the range (include checkin and exclude checkout)
+            datesToCheck = new ArrayList<>();
+            LocalDate date = checkIn;
+            while (date.isBefore(checkOut)) {
+                datesToCheck.add(date);
+                date = date.plusDays(1);
+            }
+        } else {
+            datesToCheck = requestedDates;
+        }
+        
         List<Room> allRooms = roomRepository.findAll();
         return allRooms.stream()
                 .filter(room -> {
@@ -54,7 +71,7 @@ public class RoomService {
                     // Exclude rooms with any overlapping reserved dates
                     List<LocalDate> reserved = room.getDatesReserved();
                     if (reserved == null || reserved.isEmpty()) return true;
-                    for (LocalDate date : requestedDates) {
+                    for (LocalDate date : datesToCheck) {
                         if (reserved.contains(date)) {
                             return false;
                         }
@@ -62,6 +79,7 @@ public class RoomService {
                     return true;
                 })
                 .collect(Collectors.toList());
+
     }
 
 
