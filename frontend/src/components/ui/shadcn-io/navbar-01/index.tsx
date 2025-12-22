@@ -93,21 +93,20 @@ export interface Props extends React.HTMLAttributes<HTMLElement> {
 const getNavLinksByRole = (): NavLink[] => {
 
     const auth = useAppSelector(state => state.auth);
-    const role = auth.user?.role || 'guest';
+    const role = auth.isAuthenticated ? auth.user?.role : "GUEST";
     
     switch (role) {
-        case 'admin':
+        case 'ADMIN':
             return [
                 { href: '/manage-reservations', label: 'Manage Reservations' },
                 { href: '/update-rooms', label: 'Update Rooms' },
                 { href: '/view-transactions', label: 'View Transactions' },
             ];
-        case 'user':
+        case 'CUSTOMER':
             return [
                 { href: '/', label: 'Home' },
                 { href: '/rooms', label: 'Browse Rooms' },
                 { href: '/reservations', label: 'View Reservations' },
-                { href: '/profile', label: 'Profile' },
             ];
         default:
             return [
@@ -249,29 +248,56 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
           </div>
           {/* Right side */}
           <div className="flex items-center gap-3">
-            <Link to={signInHref}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-sm font-medium hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                onClick={() => {
-                  if (onSignInClick) onSignInClick();
-                }}
-              >
-                {signInText}
-              </Button>
-            </Link>
-            <Link to={ctaHref}>
-              <Button
-                size="sm"
-                className="text-sm font-medium px-4 h-9 rounded-md shadow-sm cursor-pointer"
-                onClick={() => {
-                  if (onCtaClick) onCtaClick();
-                }}
-              >
-                {ctaText}
-              </Button>
-            </Link>
+            {(() => {
+              const auth = useAppSelector(state => state.auth);
+              if (auth.isAuthenticated) {
+                return (
+                  <>
+                    <p className="text-sm font-medium">
+                        Hello, {auth.user?.firstName || auth.user?.email}
+                    </p>
+                    <Link to="/profile" className={
+                      cn(
+                        "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 no-underline",
+                        window.location.pathname === "/profile"
+                          ? "bg-accent text-accent-foreground"
+                          : "text-foreground/80 hover:text-foreground"
+                      )
+                    }>
+                      Profile
+                    </Link>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    <Link to={signInHref}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-sm font-medium hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                        onClick={() => {
+                          if (onSignInClick) onSignInClick();
+                        }}
+                      >
+                        {signInText}
+                      </Button>
+                    </Link>
+                    <Link to={ctaHref}>
+                      <Button
+                        size="sm"
+                        className="text-sm font-medium px-4 h-9 rounded-md shadow-sm cursor-pointer"
+                        onClick={() => {
+                          if (onCtaClick) onCtaClick();
+                        }}
+                      >
+                        {ctaText}
+                      </Button>
+                    </Link>
+                  </>
+                );
+              }
+            })()}
           </div>
         </div>
       </header>

@@ -18,8 +18,8 @@ import {
   X,
   AlertTriangle,
 } from 'lucide-react';
-import { useGetReservationsQuery } from '@/features/reservation/reservationApi';
-import { useAppDispatch } from '@/app/hooks';
+import { useGetUserReservationsQuery } from '@/features/reservation/reservationApi';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { setUserReservations } from '@/features/reservation/reservationSlice';
 import type { Reservation } from '@/types/types';
 import { useGetRoomTypeByIdQuery } from '@/features/roomType/roomTypeApi';
@@ -427,7 +427,9 @@ const ReservationCard = ({
 // Main Reservations Page
 export default function Reservations() {
 
-  const { data: reservations, isLoading } = useGetReservationsQuery();
+  const userId = useAppSelector((state) => state.auth.user?.id);
+
+  const { data: reservations, isLoading } = useGetUserReservationsQuery(userId ?? '');
     const dispatch = useAppDispatch();
   
     useEffect(() => {

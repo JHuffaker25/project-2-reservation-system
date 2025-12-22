@@ -34,7 +34,7 @@ public class SecurityConfig {
 
                 //SECURED ROUTES
                 .requestMatchers("/users/all").hasRole("ADMIN")
-                /*MAY CHANGE ROLES -->*/.requestMatchers("/users/by-email").hasAnyRole("ADMIN", "CUSTOMER")
+                /*MAY CHANGE ROLES -->*/.requestMatchers("/users/me").hasAnyRole("ADMIN", "CUSTOMER")
                 /*MAY NOT NEED THIS -->*/.requestMatchers("/users/create").hasAnyRole("ADMIN", "CUSTOMER") 
                 /*MAY CHANGE ROLES -->*/.requestMatchers("/users/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/users/delete/{id}").hasRole("ADMIN")
@@ -43,7 +43,8 @@ public class SecurityConfig {
                 .requestMatchers("/reservations/new").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/reservations/{id}/check-in").hasRole("ADMIN")
                 .requestMatchers("/reservations/{id}/cancel").hasAnyRole("ADMIN", "CUSTOMER")
-                .requestMatchers("/reservations/delete/{id}").hasRole("ADMIN")
+                .requestMatchers("/reservations/{id}/update").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers("/reservations/delete/{id}").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/rooms/new").hasRole("ADMIN")
                 .requestMatchers("/rooms/delete/{id}").hasRole("ADMIN")
                 /*MAY CHANGE ROLES -->*/.requestMatchers("/room-types/by-reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") 
