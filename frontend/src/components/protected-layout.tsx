@@ -6,13 +6,7 @@ import type { User } from "@/features/auth/authSlice"
 
 export function ProtectedLayout( { requires }: { requires: string } ) {
 
-    const { loading, isAuthenticated, user } = useAppSelector( ( state ) => state.auth );
-
-    if (loading) {
-        return (
-            <Layout loading={true} />
-        );
-    }
+    const { isAuthenticated, user } = useAppSelector( ( state ) => state.auth );
 
     if (!isAuthenticated) {
         return <Navigate to="/signin" replace />
@@ -27,10 +21,10 @@ export function ProtectedLayout( { requires }: { requires: string } ) {
         }
 
         switch (user.role) {
-            case 'admin':
+            case 'ADMIN':
                 return true;
-            case 'user':
-                return requiredPermissions !== 'admin';
+            case 'CUSTOMER':
+                return requiredPermissions !== 'ADMIN';
             default:
                 return false;
         }
