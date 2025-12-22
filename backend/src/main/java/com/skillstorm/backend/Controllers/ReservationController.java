@@ -85,6 +85,21 @@ public class ReservationController {
         }
     }
 
+    //Check-out: updates the reservation to completed status
+    @PutMapping("/{id}/check-out")
+    public ResponseEntity<Object> checkOut(@PathVariable String id) {
+        try {
+            Reservation reservation = reservationService.checkOut(id);
+            return ResponseEntity.ok(reservation);
+        } catch (StripeException e) {
+            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Invalid reservation data: " + e.getMessage()).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error: " + e.getMessage()).build();
+        }
+    }
+
     // Cancel: releases the held payment
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Object> cancelReservation(@PathVariable String id) {

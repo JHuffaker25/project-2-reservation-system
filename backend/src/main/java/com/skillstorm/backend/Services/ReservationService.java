@@ -160,6 +160,16 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
+    //Check-out: updates the reservation to completed status
+    public Reservation checkOut(String reservationId) throws StripeException {
+        Reservation reservation = findReservationOrThrow(reservationId);
+        if (!"CONFIRMED".equals(reservation.getStatus())) {
+            throw new IllegalArgumentException("Reservation is not confirmed");
+        }
+        reservation.setStatus("COMPLETED");
+        return reservationRepository.save(reservation);
+    }
+
     // Cancel reservation: release held funds
     public Reservation cancelReservation(String reservationId) throws StripeException {
         Reservation reservation = findReservationOrThrow(reservationId);
