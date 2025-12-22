@@ -65,15 +65,6 @@ const ReservationCard = ({
           alt={roomType?.name}
           className="w-full h-full object-cover"
         />
-        {reservation.status === 'completed' ? (
-          <div className="absolute top-3 right-3 bg-muted text-primary px-3 py-1 rounded-full text-xs font-semibold">
-            Completed
-          </div>
-        ) : (
-          <div className="absolute top-3 right-3 bg-muted text-primary px-3 py-1 rounded-full text-xs font-semibold">
-            Upcoming
-          </div>
-        )}
       </div>
 
       <CardContent className="space-y-4">
