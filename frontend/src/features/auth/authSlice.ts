@@ -32,7 +32,7 @@ const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        login(state, action: PayloadAction<{ email: string; password: string; error?: string }>) {
+        login(state, action: PayloadAction<{ email: string; password: string; id?: string; error?: string }>) {
             if (action.payload.error) {
                 state.user = null;
                 state.isAuthenticated = false;
@@ -41,10 +41,18 @@ const authSlice = createSlice({
                 state.user = {
                     email: action.payload.email,
                     password: action.payload.password,
+                    id: action.payload.id,
                 };
                 state.isAuthenticated = true;
                 state.error = null;
             }
+        },
+
+        setUserSessionData(state, action: PayloadAction<User>) {
+            state.user = {
+                ...state.user,
+                ...action.payload,
+            };
         },
 
         logout(state) {
@@ -54,6 +62,6 @@ const authSlice = createSlice({
     },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { login, logout, setUserSessionData } = authSlice.actions;
 
 export default authSlice.reducer;
