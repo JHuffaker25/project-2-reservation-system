@@ -11,37 +11,8 @@ import ManageReservations from './pages/ManageReservations'
 import UpdateRooms from './pages/UpdateRooms'
 import BookReservation from './pages/BookReservation'
 import { ProtectedLayout } from './components/protected-layout'
-import { useEffect } from 'react'
-import { useAppDispatch } from './app/hooks'
-// import { loginSuccess, startAuth } from './features/auth/authSlice'
 
 function App() {
-
-    const dispatch = useAppDispatch();
-
-    const fakeUser = {
-        id: "69406ff27b0ba5176cd88e5e",
-        email: "test@test.com",
-        name: "Test User",
-        role: "admin",
-        preferences: {
-            emailNotifications: true,
-            darkMode: false,
-        }
-    };
-
-    // useEffect(() => {
-    //     dispatch(startAuth());
-
-    //     // const timeout = setTimeout(() => {
-    //         //  dispatch(loginSuccess(fakeUser));
-    //         // dispatch(setAuthResolved());
-    //     // }, 500);
-
-    //     dispatch(loginSuccess(fakeUser))
-    //     // return () => clearTimeout(timeout);
-    // }, [dispatch]);
-
     return (
         <Routes>
             <Route element={<Layout />}>
@@ -52,7 +23,7 @@ function App() {
                 <Route path="/rooms/:id/book" element={<BookReservation />} />
             </Route>
 
-            <Route element={<ProtectedLayout requires="user" />}>
+            <Route element={<ProtectedLayout requires="CUSTOMER" />}>
                 <Route path="/reservations" element={<Reservations />} />
                 <Route path="/profile" element={<Profile />} />
             </Route>
