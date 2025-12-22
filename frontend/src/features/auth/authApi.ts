@@ -12,7 +12,7 @@ export const authApi = baseApi.injectEndpoints({
         // get the user details from the server. credentials are sent via baseQuery headers
         getUserData: builder.query<User, void>({
             query: () => ({
-                url: "/auth/login", // TODO: UPDATE ENDPOINT
+                url: "/users/me",
                 method: "GET",
             }),
         }),
