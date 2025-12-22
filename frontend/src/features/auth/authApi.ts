@@ -19,4 +19,4 @@ export const authApi = baseApi.injectEndpoints({
     }),
 });
 
-export const { useGetUserDataQuery } = authApi;
+export const { useGetUserDataQuery, useLazyGetUserDataQuery } = authApi;
