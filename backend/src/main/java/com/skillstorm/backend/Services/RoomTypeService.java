@@ -37,7 +37,7 @@ public class RoomTypeService {
     }
 
     //GET room type by ID
-    public RoomType findRoomById(String id) {
+    public RoomType findRoomTypeById(String id) {
         RoomType roomType = roomTypeRepository.findById(id).orElse(null);
 
         if (roomType != null) {

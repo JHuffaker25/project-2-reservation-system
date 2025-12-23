@@ -40,9 +40,9 @@ public class RoomTypeController {
 
     //GET room type by ID
     @GetMapping("/{id}")
-    public ResponseEntity<RoomType> findRoomById(@PathVariable String id){
+    public ResponseEntity<RoomType> findRoomTypeById(@PathVariable String id){
         try {
-             RoomType roomType = roomTypeService.findRoomById(id);
+            RoomType roomType = roomTypeService.findRoomTypeById(id);
             return new ResponseEntity<>(roomType, HttpStatus.OK);
             
         }catch (IllegalArgumentException e) {
