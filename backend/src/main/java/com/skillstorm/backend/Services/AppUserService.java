@@ -68,7 +68,6 @@ public class AppUserService implements UserDetailsService {
     // Create user and Stripe customer
     public AppUser createUser(AppUser user) throws StripeException {
         // Validate required fields
-        //WARNING: Password will need to be hashed before saving to the database in real implementation
         if (user.getEmail() == null || user.getPassword() == null || user.getRole() == null ||
             user.getFirstName() == null || user.getLastName() == null || user.getPhone() == null) {
             throw new IllegalArgumentException("Missing required fields: email, password, role, firstName, lastName, phone");
@@ -80,7 +79,7 @@ public class AppUserService implements UserDetailsService {
                 user.getFirstName() + " " + user.getLastName());
         user.setStripeCustomerId(stripeCustomer.getId());
 
-        //Encrypt password before saving
+        //Encrypt password before saving to DB
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return appUserRepository.save(user);
@@ -133,29 +132,4 @@ public class AppUserService implements UserDetailsService {
         return user.get();
     }
 
-
-
-
-    
 }
-
-
-/*
- * 
-    //CREATE new user
-    public AppUser createUser(AppUser user) {
-        // Validate all required fields
-        if (user.getEmail() == null || user.getPassword() == null || user.getRole() == null ||
-            user.getFirstName() == null || user.getLastName() == null || user.getPhone() == null) {
-            throw new IllegalArgumentException("Missing required fields: email, password, role, firstName, lastName, phone");
-        }
-        
-        //WILL NEED TO HASH PASSWORD HERE BEFORE SAVING TO DB AND MODEL
-
-        return appUserRepository.save(user);
-    }
-
-
-    
-
- */

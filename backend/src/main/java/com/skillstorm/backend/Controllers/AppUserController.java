@@ -3,7 +3,6 @@ package com.skillstorm.backend.Controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +20,6 @@ import com.skillstorm.backend.Models.AppUser;
 import com.skillstorm.backend.Services.AppUserService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentMethod;
-import com.skillstorm.backend.DTOs.AppUserResponseDTO;
 
 @RestController
 @RequestMapping("/users")
@@ -99,12 +97,6 @@ public class AppUserController {
         }
     }
 
-    //This may be unecessary with frontend handling routing
-    /*@GetMapping("/login")
-    public RedirectView loginRedirect() {
-        return new RedirectView("http://localhost:5173");
-    }*/
-
 
         
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +118,7 @@ public class AppUserController {
     }
 
     // Attach payment method (frontend uses Stripe.js to create paymentMethodId)
-    @PostMapping("/{userId}/payment-methods/{paymentMethodId}")
+    @PostMapping("/attach/{userId}/payment-methods/{paymentMethodId}")
     public ResponseEntity<Object> addPaymentMethod(@PathVariable String userId, @PathVariable String paymentMethodId) {
         try {
             PaymentMethod pm = appUserService.addPaymentMethod(userId, paymentMethodId);
@@ -176,7 +168,7 @@ public class AppUserController {
 	}
 
     //Remove a payment method from a user
-    @DeleteMapping("/{userId}/payment-methods/{paymentMethodId}")
+    @DeleteMapping("/delete/{userId}/payment-methods/{paymentMethodId}")
     public ResponseEntity<Object> removePaymentMethod(
             @PathVariable String userId, 
             @PathVariable String paymentMethodId) {
@@ -216,22 +208,3 @@ public class AppUserController {
         return response;
     }
 }
-
-
-
-/*
-//POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
-
-	//CREATE new user (required fields: email, password, role, firstName, lastName, phone)
-	@PostMapping("/new")
-	public ResponseEntity<AppUser> createUser(@RequestBody AppUser user) {
-		try {
-			AppUser createdUser = appUserService.createUser(user);
-			return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.badRequest().header("Error", "Invalid user data: " + e.getMessage()).body(null);
-		} catch (Exception e) {
-			return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
-		}
-	}
- */

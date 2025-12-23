@@ -367,16 +367,7 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
-//DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
-/*  Maybe delete this later
-    public void deleteReservation(String reservationId) {
-        Reservation reservation = findReservationOrThrow(reservationId);
-        reservationRepository.deleteById(reservationId);
-        transactionService.cancelTransaction(reservation.getPaymentIntentId());
-    }
-
-    */
 
 //HELPER METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -395,21 +386,3 @@ public class ReservationService {
     }
 
 }
-
-
-/*//POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
-
-    //CREATE new reservation
-    public Reservation createReservation(Reservation reservation) {
-        // Validate all required fields from the Reservation model
-        if (reservation.getUserId() == null || reservation.getRoomId() == null ||
-            reservation.getCheckIn() == null || reservation.getCheckOut() == null || reservation.getNumGuests() == null ||
-            reservation.getStatus() == null || reservation.getTotalPrice() == null) {
-            throw new IllegalArgumentException("Missing required fields: userId, roomId, checkIn, checkOut, numGuests, status, totalPrice");
-        }
-        return reservationRepository.save(reservation);
-    }
-
-
-    
- */

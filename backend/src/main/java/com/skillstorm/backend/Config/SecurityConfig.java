@@ -29,44 +29,79 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> {
                 authorize
                 
-                //PERMITTED ROUTES
+            //PERMITTED ROUTES//////////////////////////////////////////////////////////////////////////////
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
 
-                //CUSTOMER OR ADMIN ROUTES
-                /*MAY CHANGE ROLES -->*/.requestMatchers("/users/me").hasAnyRole("ADMIN", "CUSTOMER")
-                /*MAY CHANGE ROLES -->*/.requestMatchers("/users/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER")
-                /*MAY CHANGE ROLES -->*/.requestMatchers("/reservations/user/{userId}").hasAnyRole("ADMIN", "CUSTOMER")
-                .requestMatchers("/reservations/new").hasAnyRole("ADMIN", "CUSTOMER")
-                .requestMatchers("/reservations/{id}/cancel").hasAnyRole("ADMIN", "CUSTOMER")
-                .requestMatchers("/reservations/{id}/update").hasAnyRole("ADMIN", "CUSTOMER")
-                .requestMatchers("/reservations/delete/{id}").hasAnyRole("ADMIN", "CUSTOMER")
-                /*MAY CHANGE ROLES -->*/.requestMatchers("/room-types/by-reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") 
-                .requestMatchers("/transactions/new").hasAnyRole("ADMIN", "CUSTOMER")
 
-                //ADMIN ONLY ROUTES
-                .requestMatchers("/users/all").hasRole("ADMIN")
-                .requestMatchers("/users/delete/{id}").hasRole("ADMIN")
-                .requestMatchers("/reservations/all").hasRole("ADMIN")
-                .requestMatchers("/reservations/{id}/check-in").hasRole("ADMIN")
-                .requestMatchers("/rooms/new").hasRole("ADMIN")
-                .requestMatchers("/rooms/delete/{id}").hasRole("ADMIN")
-                .requestMatchers("/room-types/create").hasRole("ADMIN")
-                .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN")
-                .requestMatchers("/transactions/all").hasRole("ADMIN")
-                .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN")
 
-                //TEST ROUTES
+            //ADMIN ONLY ROUTES//////////////////////////////////////////////////////////////////////////////
+                
+                //APPUSER
+                .requestMatchers("/users/all").hasRole("ADMIN") //GET all users
+                .requestMatchers("/users/{id}").hasRole("ADMIN") //GET user by ID
+                .requestMatchers("/users/delete/{id}").hasRole("ADMIN") //DELETE user by ID
+                
+                //RESERVATION
+                .requestMatchers("/reservations/all").hasRole("ADMIN") //GET all reservations
+                .requestMatchers("/reservations/{id}/check-in").hasRole("ADMIN") //PUT check-in reservation
+                .requestMatchers("/reservations/{id}/check-out").hasRole("ADMIN") //PUT check-out reservation
+               
+                //ROOM
+                .requestMatchers("/rooms/new").hasRole("ADMIN") //POST new room
+                .requestMatchers("/rooms/delete/{id}").hasRole("ADMIN") //DELETE room by ID
+                
+                //ROOM TYPE
+                .requestMatchers("/room-types/create").hasRole("ADMIN") //POST create room type
+                .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN") //DELETE room type by ID
+                
+                //TRANSACTION
+                .requestMatchers("/transactions/all").hasRole("ADMIN") //GET all transactions
+                .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN") //DELETE transaction by ID
+
+
+
+            //CUSTOMER OR ADMIN ROUTES///////////////////////////////////////////////////////////////////////
+
+                //APPUSER
+                .requestMatchers("/users/me").hasAnyRole("ADMIN", "CUSTOMER") //GET current user info
+                .requestMatchers("/users/{userId}/payment-methods").hasAnyRole("ADMIN", "CUSTOMER") //GET user payment methods
+                .requestMatchers("/users/create").hasAnyRole("ADMIN", "CUSTOMER") //POST new Stripe customer
+                .requestMatchers("/users/attach/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER") //POST attach payment method
+                .requestMatchers("/users/delete/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER") //DELETE payment method from user
+                
+                //RESERVATION
+                .requestMatchers("/reservations/user/{userId}").hasAnyRole("ADMIN", "CUSTOMER") //GET reservations by userId
+                .requestMatchers("/reservations/new").hasAnyRole("ADMIN", "CUSTOMER") //POST new reservation with payment authorization (holds funds)
+                .requestMatchers("/reservations/{id}/cancel").hasAnyRole("ADMIN", "CUSTOMER") //PUT cancel reservation (releases held payment)
+                .requestMatchers("/reservations/{id}/update").hasAnyRole("ADMIN", "CUSTOMER") //PUT update reservation
+                .requestMatchers("/reservations/delete/{id}").hasAnyRole("ADMIN", "CUSTOMER") //DELETE reservation by ID
+                
+                //ROOM TYPE
+                .requestMatchers("/room-types/by-reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") //GET room type by reservation ID
+                
+                //TRANSACTION
+                .requestMatchers("/transactions/new").hasAnyRole("ADMIN", "CUSTOMER") //POST new transaction
+                .requestMatchers("/transactions/{id}").hasAnyRole("ADMIN", "CUSTOMER") //GET transaction by ID
+                .requestMatchers("/transactions/user/{userId}").hasAnyRole("ADMIN", "CUSTOMER") //GET transaction by USER ID
+                .requestMatchers("/transactions/reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") //GET transaction by RESERVATION ID
+
+
+
+            //TEST ROUTES/////////////////////////////////////////////////////////////////////////////////////
                 .requestMatchers("/tests/hello").permitAll()
                 .requestMatchers("/tests/private-info").authenticated()
 
-                //ALL OTHER ROUTES PERMITTED
-                .anyRequest().permitAll();
 
+
+            //ALL OTHER ROUTES PERMITTED//////////////////////////////////////////////////////////////////////
+                .anyRequest().permitAll();
             })
+            
             
             //Basic AND Oauth both accepted
             .oauth2Login(Customizer.withDefaults())
             .httpBasic(Customizer.withDefaults())
+
 
             //Redirect to frontend home page upon successful login
             .oauth2Login(oauth2 -> oauth2
@@ -74,6 +109,8 @@ public class SecurityConfig {
             
         return http.build();
     }
+
+
 
     //Cors configuration
     @Bean
@@ -90,6 +127,8 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
+
 
     //Password encoder
     @Bean

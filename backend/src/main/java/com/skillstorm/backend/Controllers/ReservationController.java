@@ -133,7 +133,7 @@ public class ReservationController {
 //DELETE MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     //DELETE reservation by ID
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable String id) {
         try {
             reservationService.cancelReservation(id);
@@ -145,24 +145,3 @@ public class ReservationController {
         }
     }
 }
-
-
-
-/*POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
-
-    //CREATE new reservation (Required fields: userId, roomId, checkIn, checkOut, numGuests, status, totalPrice)
-    @PostMapping("/new")
-    public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation) {
-         try {
-            Reservation createdReservation = reservationService.createReservation(reservation);
-            return new ResponseEntity<>(createdReservation, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-             return ResponseEntity.badRequest().header("Error", "Invalid reservation data: " + e.getMessage()).body(null);
-         } catch (Exception e) {
-               return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
-        }
-            }
-
-
-
- */
