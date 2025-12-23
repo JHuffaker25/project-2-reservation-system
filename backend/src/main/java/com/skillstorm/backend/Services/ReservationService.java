@@ -130,8 +130,13 @@ public class ReservationService {
         //Must make a new reservation object to get the id from the reservation (MONGO DB creates an id with the save)
         Reservation saved = reservationRepository.save(reservation);
 
-        //Create a corresponding transaction with the reservation id
-        transactionService.createTransactionfromPaymentIntent(paymentIntent, saved.getId(), request.userId());
+       //Create a corresponding transaction with the reservation id
+        Transaction transaction = transactionService.createTransactionfromPaymentIntent(
+        paymentIntent, saved.getId(), request.userId());
+
+        //Link the transaction to the reservation
+        saved.setTransactionId(transaction.getId());
+        reservationRepository.save(saved);
 
         // Update the room's datesReserved with the newly reserved dates
         List<LocalDate> updatedDatesReserved = new ArrayList<>(datesReserved != null ? datesReserved : new ArrayList<>());
@@ -343,6 +348,9 @@ public class ReservationService {
         transaction.setAmount(amountInCents);
         transaction.setTransactionStatus(newPaymentIntent.getStatus());
         transactionService.updateTransaction(transaction);
+
+        // Update reservation with transaction ID
+        reservation.setTransactionId(transaction.getId());
 
         // Add new reservation dates to the list 
         LocalDate addDate = request.checkIn();

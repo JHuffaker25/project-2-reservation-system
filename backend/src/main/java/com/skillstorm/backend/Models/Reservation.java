@@ -17,7 +17,7 @@ public class Reservation {
     private String roomId;
     
     //PROBABLY ADD THIS IN LATER, REMOVE IF NOT NEEDED
-    //private String transactionId;
+    private String transactionId;
 
     private LocalDate checkIn;
 
@@ -36,7 +36,7 @@ public class Reservation {
 
     public Reservation(String userId, String roomId, LocalDate checkIn, 
                        LocalDate checkOut, Integer numGuests, String status, BigDecimal totalPrice,
-                       String paymentIntentId) {
+                       String paymentIntentId, String transactionId) {
         
         this.userId = userId;
         this.roomId = roomId;
@@ -119,6 +119,14 @@ public class Reservation {
     
     public void setPaymentIntentId(String paymentIntentId) {
         this.paymentIntentId = paymentIntentId;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
    
