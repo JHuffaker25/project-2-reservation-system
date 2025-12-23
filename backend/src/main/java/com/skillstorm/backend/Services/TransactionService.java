@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.skillstorm.backend.Models.Transaction;
 import com.skillstorm.backend.Repositories.TransactionRepository;
+import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.PaymentMethod;
 
 @Service
 public class TransactionService {
@@ -70,6 +72,19 @@ public class TransactionService {
         tx.setAuthorizedAt(LocalDateTime.now());
         tx.setUserId(userId);
         tx.setReservationId(reservationId);
+
+        // Capture last4 digits of card from PaymentMethod
+        try {
+            if (paymentIntent.getPaymentMethod() != null) {
+                PaymentMethod pm = PaymentMethod.retrieve(paymentIntent.getPaymentMethod());
+                if (pm.getCard() != null) {
+                    tx.setLast4(pm.getCard().getLast4());
+                }
+            }
+        } catch (StripeException e) {
+            System.err.println("Failed to retrieve payment method details: " + e.getMessage());
+        }
+
         return transactionRepository.save(tx);
     }
 

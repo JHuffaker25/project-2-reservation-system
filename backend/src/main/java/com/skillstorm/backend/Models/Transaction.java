@@ -27,6 +27,8 @@ public class Transaction {
 
     private String currency;
 
+    private String last4;
+
     private LocalDateTime authorizedAt;
     
     private LocalDateTime capturedAt;
@@ -104,6 +106,14 @@ public class Transaction {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getLast4() {
+        return last4;
+    }
+
+    public void setLast4(String last4) {
+        this.last4 = last4;
     }
 
     public LocalDateTime getAuthorizedAt() {
