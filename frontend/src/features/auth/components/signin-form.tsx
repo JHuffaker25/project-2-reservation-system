@@ -24,8 +24,9 @@ import { setCredentials, clearCredentials } from "@/features/auth/authMemory";
 
 export function SigninForm({
   className,
+  redirectTo = "/rooms",
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & { redirectTo?: string }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const googleLoginUri = import.meta.env.VITE_GOOGLE_LOGIN_URI;
@@ -50,7 +51,7 @@ export function SigninForm({
       const user = await fetchUser().unwrap();
       dispatch(login({ email }));
       dispatch(setUserSessionData(user));
-      navigate("/rooms");
+      navigate(redirectTo);
     } catch {
       clearCredentials();
       setError("Invalid email or password");
