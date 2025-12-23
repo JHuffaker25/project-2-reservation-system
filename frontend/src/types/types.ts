@@ -54,3 +54,10 @@ export interface Transaction {
   capturedAt: string; // ISO string
   cancelledAt: string; // ISO string
 }
+
+export interface UpdateReservationRequest {
+  id: string;
+  checkIn: string; // ISO date string
+  checkOut: string; // ISO date string
+  numGuests: number;
+}

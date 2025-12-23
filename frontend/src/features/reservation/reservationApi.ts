@@ -1,5 +1,5 @@
 import { baseApi } from '@/app/baseApi';
-import type { Reservation } from '@/types/types';
+import type { Reservation, UpdateReservationRequest } from '@/types/types';
 
 export const reservationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -25,8 +25,23 @@ export const reservationApi = baseApi.injectEndpoints({
         }),
         transformResponse: (response: Reservation) => response,
     }),
+    updateReservation: builder.mutation<UpdateReservationRequest, UpdateReservationRequest>({
+        query: (updatedReservation) => ({
+            url: `/reservations/${updatedReservation.id}/update`,
+            method: 'PUT',
+            body: updatedReservation,
+        }),
+        transformResponse: (response: UpdateReservationRequest) => response,
+    }),
+    cancelReservation: builder.mutation<{ message: string }, string>({
+      query: (reservationId) => ({
+        url: `/reservations/delete/${reservationId}`,
+        method: 'DELETE',
+      }),
+      transformResponse: (response: { message: string }) => response,
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetReservationsQuery, useGetUserReservationsQuery, useCreateReservationMutation } = reservationApi;
+export const { useGetReservationsQuery, useGetUserReservationsQuery, useCreateReservationMutation, useUpdateReservationMutation, useCancelReservationMutation } = reservationApi;
