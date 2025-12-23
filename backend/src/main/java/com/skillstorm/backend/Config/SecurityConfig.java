@@ -32,39 +32,45 @@ public class SecurityConfig {
                 //PERMITTED ROUTES
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
 
-                //SECURED ROUTES
-                .requestMatchers("/users/all").hasRole("ADMIN")
+                //CUSTOMER OR ADMIN ROUTES
                 /*MAY CHANGE ROLES -->*/.requestMatchers("/users/me").hasAnyRole("ADMIN", "CUSTOMER")
-                /*MAY NOT NEED THIS -->*/.requestMatchers("/users/create").hasAnyRole("ADMIN", "CUSTOMER") 
                 /*MAY CHANGE ROLES -->*/.requestMatchers("/users/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER")
-                .requestMatchers("/users/delete/{id}").hasRole("ADMIN")
-                .requestMatchers("/reservations/all").hasRole("ADMIN")
                 /*MAY CHANGE ROLES -->*/.requestMatchers("/reservations/user/{userId}").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/reservations/new").hasAnyRole("ADMIN", "CUSTOMER")
-                .requestMatchers("/reservations/{id}/check-in").hasRole("ADMIN")
                 .requestMatchers("/reservations/{id}/cancel").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/reservations/{id}/update").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/reservations/delete/{id}").hasAnyRole("ADMIN", "CUSTOMER")
+                /*MAY CHANGE ROLES -->*/.requestMatchers("/room-types/by-reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") 
+                .requestMatchers("/transactions/new").hasAnyRole("ADMIN", "CUSTOMER")
+
+                //ADMIN ONLY ROUTES
+                .requestMatchers("/users/all").hasRole("ADMIN")
+                .requestMatchers("/users/delete/{id}").hasRole("ADMIN")
+                .requestMatchers("/reservations/all").hasRole("ADMIN")
+                .requestMatchers("/reservations/{id}/check-in").hasRole("ADMIN")
                 .requestMatchers("/rooms/new").hasRole("ADMIN")
                 .requestMatchers("/rooms/delete/{id}").hasRole("ADMIN")
-                /*MAY CHANGE ROLES -->*/.requestMatchers("/room-types/by-reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") 
                 .requestMatchers("/room-types/create").hasRole("ADMIN")
                 .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN")
                 .requestMatchers("/transactions/all").hasRole("ADMIN")
-                .requestMatchers("/transactions/new").hasAnyRole("ADMIN", "CUSTOMER")
                 .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN")
+
+                //TEST ROUTES
+                .requestMatchers("/tests/hello").permitAll()
+                .requestMatchers("/tests/private-info").authenticated()
 
                 //ALL OTHER ROUTES PERMITTED
                 .anyRequest().permitAll();
-                
-                //TESTING ROUTES
-                //.requestMatchers("/tests/hello").permitAll()
-                //.requestMatchers("/tests/private-info").authenticated()
+
             })
             
             //Basic AND Oauth both accepted
             .oauth2Login(Customizer.withDefaults())
-            .httpBasic(Customizer.withDefaults());
+            .httpBasic(Customizer.withDefaults())
+
+            //Redirect to frontend home page upon successful login
+            .oauth2Login(oauth2 -> oauth2
+            .defaultSuccessUrl("http://localhost:3000/home", true)); //REPLACE WITH OUR ACTUAL FRONTEND URL
             
         return http.build();
     }
