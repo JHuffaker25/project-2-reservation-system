@@ -1,15 +1,17 @@
-import { Navigate } from "react-router"
+import { Navigate, useLocation } from "react-router-dom"
 import Layout from "./layout"
 import { useAppSelector } from "@/app/hooks"
 import type { User } from "@/features/auth/authSlice"
 ;
 
 export function ProtectedLayout( { requires }: { requires: string } ) {
+    const location = useLocation();
 
     const { isAuthenticated, user } = useAppSelector( ( state ) => state.auth );
 
     if (!isAuthenticated) {
-        return <Navigate to="/signin" replace />
+        // Pass the current location in state so Signin can redirect back after login
+        return <Navigate to="/signin" replace state={{ from: location }} />
     }
 
     // Function to compare user role with required permissions

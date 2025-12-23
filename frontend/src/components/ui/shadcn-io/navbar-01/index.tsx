@@ -12,8 +12,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { clearCredentials } from '@/features/auth/authMemory';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -135,6 +136,8 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
   ) => {
     const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
       const checkWidth = () => {
@@ -254,7 +257,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                 return (
                   <>
                     <p className="text-sm font-medium">
-                        Hello, {auth.user?.firstName || auth.user?.email}
+                        Hello, {auth.user?.firstName || auth.user?.email}!
                     </p>
                     <Link to="/profile" className={
                       cn(
@@ -266,6 +269,19 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                     }>
                       Profile
                     </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 no-underline text-foreground/80 hover:text-foreground cursor-pointer"
+                      onClick={() => {
+                        clearCredentials();
+                        dispatch({ type: 'auth/logout' });
+                        navigate('/');
+                        window.location.reload();
+                      }}
+                    >
+                      Sign Out
+                    </Button>
                   </>
                 );
               } else {

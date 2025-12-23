@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
   return (
@@ -21,7 +22,9 @@ export default function LandingPage() {
               <p className="text-lg max-w-2xl mb-6">
                 Discover comfort, style, and convenience. Book your next stay with us and experience hospitality redefined.
               </p>
-              <Button size="lg" className="bg-force-light text-force-dark cursor-pointer hover:bg-force-light hover:text-force-dark">Book Now</Button>
+              <Link to="/rooms">
+                <Button size="lg" className="bg-force-light text-force-dark cursor-pointer hover:bg-force-light hover:text-force-dark">Book Now</Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -75,7 +78,9 @@ export default function LandingPage() {
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Ready to book your stay?</h2>
             <p className="text-muted-foreground text-lg">Reserve your room now and enjoy exclusive benefits!</p>
           </div>
-          <Button size="lg" className="font-semibold cursor-pointer">Book Now</Button>
+          <Link to="/rooms">
+            <Button size="lg" className="font-semibold cursor-pointer">Book Now</Button>
+          </Link>
         </div>
       </div>
     </div>
