@@ -12,6 +12,7 @@ import com.skillstorm.backend.DTOs.UpdateReservationRequest;
 import com.skillstorm.backend.Models.AppUser;
 import com.skillstorm.backend.Models.Reservation;
 import com.skillstorm.backend.Models.Room;
+import com.skillstorm.backend.Models.RoomType;
 import com.skillstorm.backend.Models.Transaction;
 import com.skillstorm.backend.Repositories.AppUserRepository;
 import com.skillstorm.backend.Repositories.ReservationRepository;
@@ -26,14 +27,19 @@ public class ReservationService {
     private final AppUserRepository appUserRepository;
     private final TransactionService transactionService;
     private final RoomService roomService;
+    private final EmailService emailService;
+    private final RoomTypeService roomTypeService;
 
-    public ReservationService(ReservationRepository reservationRepository, StripeService stripeService, 
-                              AppUserRepository appUserRepository, TransactionService transactionService, RoomService roomService) {
+    public ReservationService(ReservationRepository reservationRepository, StripeService stripeService,
+                              AppUserRepository appUserRepository, TransactionService transactionService,
+                              RoomService roomService, EmailService emailService, RoomTypeService roomTypeService) {
         this.reservationRepository = reservationRepository;
         this.stripeService = stripeService;
         this.appUserRepository = appUserRepository;
         this.transactionService = transactionService;
         this.roomService = roomService;
+        this.emailService = emailService;
+        this.roomTypeService = roomTypeService;
     }
 
 
@@ -137,6 +143,18 @@ public class ReservationService {
         room.setDatesReserved(updatedDatesReserved);
         roomService.saveRoom(room);
 
+        // Send reservation confirmation email
+        RoomType roomType = roomTypeService.findRoomTypeById(room.getTypeId());
+        emailService.sendReservationConfirmation(
+            user.getEmail(),
+            user.getFirstName(),
+            saved.getId(),
+            saved.getCheckIn(),
+            saved.getCheckOut(),
+            roomType.getName(),
+            amountInCents.doubleValue()
+        );
+
         return saved;
     }
 
@@ -150,14 +168,34 @@ public class ReservationService {
             throw new IllegalArgumentException("Reservation is not pending");
         }
 
+        // Get user and room information for email
+        Optional<AppUser> userOpt = appUserRepository.findById(reservation.getUserId());
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+        AppUser user = userOpt.get();
+        Room room = roomService.findRoomById(reservation.getRoomId());
+
         // Capture funds
-        stripeService.capturePayment(reservation.getPaymentIntentId());
+        PaymentIntent capturedIntent = stripeService.capturePayment(reservation.getPaymentIntentId());
         reservation.setStatus("CONFIRMED");
 
         // Update the corresponding transaction to CAPTURED
         transactionService.captureTransaction(reservation.getPaymentIntentId());
 
-        return reservationRepository.save(reservation);
+        Reservation saved = reservationRepository.save(reservation);
+
+        // Send check-in confirmation email
+        emailService.sendCheckInConfirmation(
+            user.getEmail(),
+            user.getFirstName(),
+            saved.getId(),
+            room.getRoomNumber().toString(),
+            saved.getCheckOut(),
+            capturedIntent.getAmount().doubleValue()
+        );
+
+        return saved;
     }
 
     //Check-out: updates the reservation to completed status
@@ -169,7 +207,7 @@ public class ReservationService {
         reservation.setStatus("COMPLETED");
         return reservationRepository.save(reservation);
     }
-
+        
     // Cancel reservation: release held funds
     public Reservation cancelReservation(String reservationId) throws StripeException {
         Reservation reservation = findReservationOrThrow(reservationId);
@@ -178,6 +216,13 @@ public class ReservationService {
             throw new IllegalArgumentException("Reservation is not pending");
         }
 
+        // Get user information for email
+        Optional<AppUser> userOpt = appUserRepository.findById(reservation.getUserId());
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+        AppUser user = userOpt.get();
+
         // Cancel payment intent
         stripeService.cancelPayment(reservation.getPaymentIntentId());
         reservation.setStatus("CANCELLED");
@@ -185,7 +230,30 @@ public class ReservationService {
         //Cancel the corresponding transaction
         transactionService.cancelTransaction(reservation.getPaymentIntentId());
 
-        return reservationRepository.save(reservation);
+        // Release the room dates by removing them from the room's datesReserved list
+        Room room = roomService.findRoomById(reservation.getRoomId());
+        List<LocalDate> datesReserved = new ArrayList<>(room.getDatesReserved() != null ? room.getDatesReserved() : new ArrayList<>());
+
+        // Remove reservation dates from the room's reserved dates
+        LocalDate date = reservation.getCheckIn();
+        while (date.isBefore(reservation.getCheckOut())) {
+            datesReserved.remove(date);
+            date = date.plusDays(1);
+        }
+
+        room.setDatesReserved(datesReserved);
+        roomService.saveRoom(room);
+
+        Reservation saved = reservationRepository.save(reservation);
+
+        // Send cancellation confirmation email
+        emailService.sendCancellationConfirmation(
+            user.getEmail(),
+            user.getFirstName(),
+            saved.getId()
+        );
+
+        return saved;
     }
 
     //Update reservation (Required fields: checkIn, checkOut, numGuests, totalPrice)
@@ -311,6 +379,7 @@ public class ReservationService {
         }
         return reservationOpt.get();
     }
+
 
     public Reservation getReservationById(String id) {
         // TODO Auto-generated method stub
