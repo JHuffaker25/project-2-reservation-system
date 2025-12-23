@@ -20,12 +20,12 @@ function App() {
                 <Route path="/signin" element={<Signin />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/rooms" element={<Rooms />} />
-                <Route path="/rooms/:id/book" element={<BookReservation />} />
             </Route>
 
             <Route element={<ProtectedLayout requires="CUSTOMER" />}>
                 <Route path="/reservations" element={<Reservations />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/rooms/:id/book" element={<BookReservation />} />
             </Route>
 
             <Route element={<ProtectedLayout requires="admin" />}>
