@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom"
 import Layout from "./layout"
 import { useAppSelector } from "@/app/hooks"
-import type { User } from "@/features/auth/authSlice"
+import type { User } from "@/types/types"
 ;
 
 export function ProtectedLayout( { requires }: { requires: string } ) {

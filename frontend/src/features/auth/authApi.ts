@@ -1,4 +1,4 @@
-import type { User } from "./authSlice";
+import type { User } from "@/types/types";
 import { baseApi } from "@/app/baseApi";
 
 export interface AuthResponse {
@@ -16,7 +16,14 @@ export const authApi = baseApi.injectEndpoints({
                 method: "GET",
             }),
         }),
+        createUser: builder.mutation<AuthResponse, Partial<User>>({
+            query: (newUser) => ({
+                url: "/users/create",
+                method: "POST",
+                body: newUser,
+            }),
+        }),
     }),
 });
 
-export const { useGetUserDataQuery, useLazyGetUserDataQuery } = authApi;
+export const { useGetUserDataQuery, useLazyGetUserDataQuery, useCreateUserMutation } = authApi;
