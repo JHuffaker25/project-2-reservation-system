@@ -69,8 +69,21 @@ public class AppUserService implements UserDetailsService {
     public AppUser createUser(AppUser user) throws StripeException {
         // Validate required fields
         if (user.getEmail() == null || user.getPassword() == null || user.getRole() == null ||
-            user.getFirstName() == null || user.getLastName() == null || user.getPhone() == null) {
-            throw new IllegalArgumentException("Missing required fields: email, password, role, firstName, lastName, phone");
+            user.getFirstName() == null || user.getLastName() == null) {
+            throw new IllegalArgumentException("Missing required fields: email, password, role, firstName, lastName");
+        }
+
+        // Set default preferences if not provided
+        if (user.getPreferences() == null) {
+            user.setPreferences(new AppUser.Preferences(false, false));
+        } else {
+            // If preferences object exists but fields are null, set them to false
+            if (user.getPreferences().getEmailNotifications() == null) {
+                user.getPreferences().setEmailNotifications(false);
+            }
+            if (user.getPreferences().getDarkMode() == null) {
+                user.getPreferences().setDarkMode(false);
+            }
         }
 
         // Create Stripe customer
