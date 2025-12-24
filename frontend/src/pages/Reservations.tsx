@@ -151,7 +151,7 @@ const ReservationCard = ({
       </Card>
       {/* Receipt Dialog */}
       <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-        <DialogContent className="flex flex-col items-center bg-transparent shadow-none border-none">
+        <DialogContent className="flex flex-col items-center bg-transparent shadow-none border-none text-force-dark">
           <div className="bg-white w-full max-w-xs shadow-lg border border-dashed border-gray-300 px-6 py-6 font-mono relative overflow-hidden receipt-paper">
             <div className="absolute left-0 right-0 top-0 flex justify-between -mt-3">
               {[...Array(12)].map((_, i) => (
