@@ -3,16 +3,28 @@ import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import type { FetchArgs } from '@reduxjs/toolkit/query';
 import { getCredentials } from '@/features/auth/authMemory';
 
-// Base query with Basic Auth headers
+// Base query with Basic Auth headers and CSRF token
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_BASE_URL,
+  credentials: 'include', // Always send cookies (for CSRF)
   prepareHeaders: (headers) => {
+    // Add Basic Auth if present
     const creds = getCredentials();
     if (creds) {
       headers.set(
         "Authorization",
         `Basic ${btoa(`${creds.email}:${creds.password}`)}`
       );
+    }
+    // Add CSRF token from localStorage (set by /users/csrf fetch)
+    if (typeof window !== 'undefined') {
+      const csrfToken = localStorage.getItem('csrfToken');
+      if (csrfToken) {
+        headers.set('X-XSRF-TOKEN', csrfToken);
+        console.log('[baseApi] CSRF token sent:', csrfToken);
+      } else {
+        console.log('[baseApi] NO CSRF token in localStorage');
+      }
     }
     return headers;
   },

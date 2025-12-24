@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router'
+import { useCsrfToken } from './app/useCsrfToken'
 import Layout from './components/layout'
 import Signin from './pages/Signin'
 import Signup from './pages/Signup'
@@ -13,6 +14,7 @@ import BookReservation from './pages/BookReservation'
 import { ProtectedLayout } from './components/protected-layout'
 
 function App() {
+    useCsrfToken()
     return (
         <Routes>
             <Route element={<Layout />}>
