@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -25,7 +26,9 @@ public class SecurityConfig {
     
         http
             .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable()) // Disable CSRF TEMPORARILY for testing purposes
+            
+            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())) //Allow JS to read CSRF token cookie
+
             .authorizeHttpRequests(authorize -> {
                 authorize
                 
@@ -38,7 +41,7 @@ public class SecurityConfig {
                 
                 //APPUSER
                 .requestMatchers("/users/all").hasRole("ADMIN") //GET all users
-                .requestMatchers("/users/{id}").hasRole("ADMIN") //GET user by ID
+                .requestMatchers("/users/user/{id}").hasRole("ADMIN") //GET user by ID
                 .requestMatchers("/users/delete/{id}").hasRole("ADMIN") //DELETE user by ID
                 
                 //RESERVATION
@@ -65,10 +68,11 @@ public class SecurityConfig {
                 //APPUSER
                 .requestMatchers("/users/me").hasAnyRole("ADMIN", "CUSTOMER") //GET current user info
                 .requestMatchers("/users/{userId}/payment-methods").hasAnyRole("ADMIN", "CUSTOMER") //GET user payment methods
+                .requestMatchers("/users/csrf").hasAnyRole("ADMIN", "CUSTOMER") //GET CSRF token
                 .requestMatchers("/users/create").hasAnyRole("ADMIN", "CUSTOMER") //POST new Stripe customer
                 .requestMatchers("/users/attach/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER") //POST attach payment method
                 .requestMatchers("/users/delete/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER") //DELETE payment method from user
-                
+
                 //RESERVATION
                 .requestMatchers("/reservations/user/{userId}").hasAnyRole("ADMIN", "CUSTOMER") //GET reservations by userId
                 .requestMatchers("/reservations/new").hasAnyRole("ADMIN", "CUSTOMER") //POST new reservation with payment authorization (holds funds)
