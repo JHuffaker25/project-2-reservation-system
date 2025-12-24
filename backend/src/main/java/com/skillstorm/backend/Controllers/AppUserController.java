@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -108,6 +109,59 @@ public class AppUserController {
 
 
         
+//PUT MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Update user details
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Object> updateUserDetails(@PathVariable String id, @RequestBody Map<String, String> updates) {
+        try {
+            AppUser updatedUser = appUserService.updateUserDetails(id,
+                updates.get("firstName"),
+                updates.get("lastName"),
+                updates.get("email"),
+                updates.get("phone")
+            );
+            return ResponseEntity.ok(new AppUserResponseDTO(
+                updatedUser.getId(),
+                updatedUser.getEmail(),
+                updatedUser.getRole(),
+                updatedUser.getFirstName(),
+                updatedUser.getLastName(),
+                updatedUser.getPhone(),
+                updatedUser.getPreferences()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Internal server error");
+        }
+    }
+
+    //Update user preferences
+    @PutMapping("/update-preferences/{id}")
+    public ResponseEntity<Object> updateUserPreferences(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        try {
+            Boolean emailNotifications = updates.get("emailNotifications") != null ? (Boolean) updates.get("emailNotifications") : null;
+            String display = updates.get("display") != null ? updates.get("display").toString() : null;
+            AppUser updatedUser = appUserService.updateUserPreferences(id, emailNotifications, display);
+            return ResponseEntity.ok(new AppUserResponseDTO(
+                updatedUser.getId(),
+                updatedUser.getEmail(),
+                updatedUser.getRole(),
+                updatedUser.getFirstName(),
+                updatedUser.getLastName(),
+                updatedUser.getPhone(),
+                updatedUser.getPreferences()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Internal server error");
+        }
+    }
+
+
+
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
 
     //To be adjusted to account for authentication

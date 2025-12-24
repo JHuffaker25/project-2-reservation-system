@@ -99,6 +99,34 @@ public class AppUserService implements UserDetailsService {
 
 
 
+//PUT METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Update user details (firstName, lastName, email, phone)
+    public AppUser updateUserDetails(String id, String firstName, String lastName, String email, String phone) {
+        AppUser user = findUserOrThrow(id);
+        if (firstName != null) user.setFirstName(firstName);
+        if (lastName != null) user.setLastName(lastName);
+        if (email != null) user.setEmail(email);
+        if (phone != null) user.setPhone(phone);
+        return appUserRepository.save(user);
+    }
+
+    // Update user preferences (emailNotifications, display)
+    public AppUser updateUserPreferences(String id, Boolean emailNotifications, String display) {
+        AppUser user = findUserOrThrow(id);
+        AppUser.Preferences prefs = user.getPreferences();
+        if (prefs == null) {
+            prefs = new AppUser.Preferences();
+        }
+        if (emailNotifications != null) prefs.setEmailNotifications(emailNotifications);
+        if (display != null) prefs.setDisplay(display);
+        user.setPreferences(prefs);
+        return appUserRepository.save(user);
+    }
+
+
+
+
 //DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
     public void deleteUser(String id) {

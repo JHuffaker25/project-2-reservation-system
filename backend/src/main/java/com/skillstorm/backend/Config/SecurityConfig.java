@@ -43,6 +43,8 @@ public class SecurityConfig {
                 .requestMatchers("/users/all").hasRole("ADMIN") //GET all users
                 .requestMatchers("/users/user/{id}").hasRole("ADMIN") //GET user by ID
                 .requestMatchers("/users/delete/{id}").hasRole("ADMIN") //DELETE user by ID
+                .requestMatchers("/users/update/{id}").hasAnyRole("ADMIN", "CUSTOMER") //PUT update user details
+                .requestMatchers("/users/update-preferences/{id}").hasAnyRole("ADMIN", "CUSTOMER") //PUT update user preferences
                 
                 //RESERVATION
                 .requestMatchers("/reservations/all").hasRole("ADMIN") //GET all reservations
