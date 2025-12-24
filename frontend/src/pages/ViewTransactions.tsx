@@ -18,7 +18,6 @@ import {
   Clock,
   RotateCcw,
   X,
-  Mail,
   Calendar,
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
@@ -195,7 +194,7 @@ export default function ViewTransactions() {
   const { data: transactions = [], isLoading, error } = useGetTransactionsQuery();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [methodFilter, setMethodFilter] = useState('');
+//   const [methodFilter, setMethodFilter] = useState('');
   const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
     start: null,
     end: null,

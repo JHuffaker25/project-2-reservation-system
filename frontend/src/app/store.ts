@@ -4,7 +4,6 @@ import authReducer from '@/features/auth/authSlice'
 import roomTypeReducer from '@/features/roomType/roomTypeSlice'
 import reservationReducer from '@/features/reservation/reservationSlice'
 import { baseApi } from './baseApi'
-import { authApi } from '@/features/auth/authApi'
 
 export const store = configureStore({
     reducer: {

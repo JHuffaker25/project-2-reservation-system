@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
   CardHeader,
@@ -6,10 +6,10 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+// import { Input } from '@/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Table, TableHeader, TableRow, TableCell, TableBody } from '@/components/ui/table';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+// import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, Calendar, X, Search, ChevronDown } from 'lucide-react';
 import { useGetReservationsQuery } from '@/features/reservation/reservationApi';
 import Loader from '@/components/loader';
@@ -245,132 +245,132 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 // Edit Reservation Dialog
-const EditReservationModal = ({
-  open,
-  reservation,
-  onClose,
-  onSave,
-}: {
-  open: boolean;
-  reservation: any;
-  onClose: () => void;
-  onSave: (updated: any) => void;
-}) => {
-  const [form, setForm] = useState(reservation);
+// const EditReservationModal = ({
+//   open,
+//   reservation,
+//   onClose,
+//   onSave,
+// }: {
+//   open: boolean;
+//   reservation: any;
+//   onClose: () => void;
+//   onSave: (updated: any) => void;
+// }) => {
+//   const [form, setForm] = useState(reservation);
   
-  useEffect(() => {
-    setForm(reservation);
-  }, [reservation]);
+//   useEffect(() => {
+//     setForm(reservation);
+//   }, [reservation]);
 
-  if (!reservation || !form) return null;
+//   if (!reservation || !form) return null;
 
-  return (
-    <Dialog open={open} onOpenChange={val => { if (!val) onClose(); }}>
-      <DialogContent className="max-w-lg mx-auto">
-        {open && reservation && (
-          <Card className="shadow-none border-none">
-            <CardHeader>
-              <CardTitle>Edit Reservation</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-semibold">First Name</label>
-                <Input
-                  value={form.firstName}
-                  onChange={e => setForm({ ...form, firstName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Last Name</label>
-                <Input
-                  value={form.lastName}
-                  onChange={e => setForm({ ...form, lastName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Email</label>
-                <Input
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2">
-                <div>
-                  <label className="text-sm font-semibold">Check-in</label>
-                  <Input
-                    type="date"
-                    value={form.checkIn ? form.checkIn.toISOString().slice(0, 10) : ''}
-                    onChange={e => setForm({ ...form, checkIn: new Date(e.target.value) })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-semibold">Check-out</label>
-                  <Input
-                    type="date"
-                    value={form.checkOut ? form.checkOut.toISOString().slice(0, 10) : ''}
-                    onChange={e => setForm({ ...form, checkOut: new Date(e.target.value) })}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Guests</label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={form.guests}
-                  onChange={e => setForm({ ...form, guests: Number(e.target.value) })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Room Type</label>
-                <select
-                  className="w-full px-3 py-2 h-10 border border-input rounded-md bg-background text-foreground text-sm"
-                  value={form.roomType}
-                  onChange={e => setForm({ ...form, roomType: e.target.value })}
-                >
-                  {roomTypes.filter(t => t !== 'All').map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Status</label>
-                <select
-                  className="w-full px-3 py-2 h-10 border border-input rounded-md bg-background text-foreground text-sm"
-                  value={form.status}
-                  onChange={e => setForm({ ...form, status: e.target.value })}
-                >
-                  {statuses.filter(s => s !== 'All').map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-2 justify-end pt-4">
-                <Button variant="outline" onClick={onClose} className="cursor-pointer">Cancel</Button>
-                <Button
-                  disabled={!(form.checkIn && form.checkOut && form.checkOut > form.checkIn && form.guests > 0)}
-                  onClick={() => onSave(form)}
-                  className="cursor-pointer"
-                >
-                  Save Changes
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-};
+//   return (
+//     <Dialog open={open} onOpenChange={val => { if (!val) onClose(); }}>
+//       <DialogContent className="max-w-lg mx-auto">
+//         {open && reservation && (
+//           <Card className="shadow-none border-none">
+//             <CardHeader>
+//               <CardTitle>Edit Reservation</CardTitle>
+//             </CardHeader>
+//             <CardContent className="space-y-4">
+//               <div>
+//                 <label className="text-sm font-semibold">First Name</label>
+//                 <Input
+//                   value={form.firstName}
+//                   onChange={e => setForm({ ...form, firstName: e.target.value })}
+//                 />
+//               </div>
+//               <div>
+//                 <label className="text-sm font-semibold">Last Name</label>
+//                 <Input
+//                   value={form.lastName}
+//                   onChange={e => setForm({ ...form, lastName: e.target.value })}
+//                 />
+//               </div>
+//               <div>
+//                 <label className="text-sm font-semibold">Email</label>
+//                 <Input
+//                   value={form.email}
+//                   onChange={e => setForm({ ...form, email: e.target.value })}
+//                 />
+//               </div>
+//               <div className="flex gap-2">
+//                 <div>
+//                   <label className="text-sm font-semibold">Check-in</label>
+//                   <Input
+//                     type="date"
+//                     value={form.checkIn ? form.checkIn.toISOString().slice(0, 10) : ''}
+//                     onChange={e => setForm({ ...form, checkIn: new Date(e.target.value) })}
+//                   />
+//                 </div>
+//                 <div>
+//                   <label className="text-sm font-semibold">Check-out</label>
+//                   <Input
+//                     type="date"
+//                     value={form.checkOut ? form.checkOut.toISOString().slice(0, 10) : ''}
+//                     onChange={e => setForm({ ...form, checkOut: new Date(e.target.value) })}
+//                   />
+//                 </div>
+//               </div>
+//               <div>
+//                 <label className="text-sm font-semibold">Guests</label>
+//                 <Input
+//                   type="number"
+//                   min={1}
+//                   value={form.guests}
+//                   onChange={e => setForm({ ...form, guests: Number(e.target.value) })}
+//                 />
+//               </div>
+//               <div>
+//                 <label className="text-sm font-semibold">Room Type</label>
+//                 <select
+//                   className="w-full px-3 py-2 h-10 border border-input rounded-md bg-background text-foreground text-sm"
+//                   value={form.roomType}
+//                   onChange={e => setForm({ ...form, roomType: e.target.value })}
+//                 >
+//                   {roomTypes.filter(t => t !== 'All').map(type => (
+//                     <option key={type} value={type}>{type}</option>
+//                   ))}
+//                 </select>
+//               </div>
+//               <div>
+//                 <label className="text-sm font-semibold">Status</label>
+//                 <select
+//                   className="w-full px-3 py-2 h-10 border border-input rounded-md bg-background text-foreground text-sm"
+//                   value={form.status}
+//                   onChange={e => setForm({ ...form, status: e.target.value })}
+//                 >
+//                   {statuses.filter(s => s !== 'All').map(status => (
+//                     <option key={status} value={status}>{status}</option>
+//                   ))}
+//                 </select>
+//               </div>
+//               <div className="flex gap-2 justify-end pt-4">
+//                 <Button variant="outline" onClick={onClose} className="cursor-pointer">Cancel</Button>
+//                 <Button
+//                   disabled={!(form.checkIn && form.checkOut && form.checkOut > form.checkIn && form.guests > 0)}
+//                   onClick={() => onSave(form)}
+//                   className="cursor-pointer"
+//                 >
+//                   Save Changes
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         )}
+//       </DialogContent>
+//     </Dialog>
+//   );
+// };
 
 // Main ManageReservations page
 const PAGE_SIZE = 5;
 type SortKey = 'checkIn' | 'guestName' | 'status';
-const sortOptions = [
-  { label: 'Check-in Date', value: 'checkIn' },
-  { label: 'Guest Name', value: 'guestName' },
-  { label: 'Status', value: 'status' },
-] as const;
+// const sortOptions = [
+//   { label: 'Check-in Date', value: 'checkIn' },
+//   { label: 'Guest Name', value: 'guestName' },
+//   { label: 'Status', value: 'status' },
+// ] as const;
 
 
 const ManageReservations: React.FC = () => {
@@ -382,11 +382,11 @@ const ManageReservations: React.FC = () => {
     roomType: '',
     status: '',
   });
-  const [sortBy, setSortBy] = useState<SortKey>('checkIn');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, ] = useState<SortKey>('checkIn');
+  const [sortDir, ] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(1);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editReservation, setEditReservation] = useState<any | null>(null);
+  const [, setEditModalOpen] = useState(false);
+  const [, setEditReservation] = useState<any | null>(null);
 
   // Filtering and searching (updated for API model)
   const filteredReservations = useMemo(() => {
@@ -455,17 +455,17 @@ const ManageReservations: React.FC = () => {
     setEditReservation(reservation);
     setEditModalOpen(true);
   };
-  const handleSaveEdit = (updated: any) => {
-    // TODO: Implement API update
-    setEditModalOpen(false);
-    setEditReservation(null);
-  };
-  const handleCancel = (id: string) => {
-    // TODO: Implement API cancel
-  };
-  const handleComplete = (id: string) => {
-    // TODO: Implement API complete
-  };
+//   const handleSaveEdit = (updated: any) => {
+//     // TODO: Implement API update
+//     setEditModalOpen(false);
+//     setEditReservation(null);
+//   };
+//   const handleCancel = (id: string) => {
+//     // TODO: Implement API cancel
+//   };
+//   const handleComplete = (id: string) => {
+//     // TODO: Implement API complete
+//   };
 
   if (isLoading) return <Loader />;
   if (error) return <div className="p-8 text-red-600">Failed to load reservations.</div>;
@@ -567,18 +567,18 @@ const ManageReservations: React.FC = () => {
         </div>
       </div>
       {/* Edit Modal */}
-      <EditReservationModal
+      {/* <EditReservationModal
         open={editModalOpen}
         reservation={editReservation}
         onClose={() => { setEditModalOpen(false); setEditReservation(null); }}
         onSave={handleSaveEdit}
-      />
+      /> */}
     </div>
   );
 };
 
 // Chevron icons for sorting
-const ChevronDownIcon = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>;
-const ChevronUpIcon = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>;
+// const ChevronDownIcon = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>;
+// const ChevronUpIcon = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>;
 
 export default ManageReservations;

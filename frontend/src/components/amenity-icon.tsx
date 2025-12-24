@@ -1,4 +1,4 @@
-import { Wifi, Tv, Wine, Wind, Coffee, Calendar, X, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { Wifi, Tv, Wine, Wind, Coffee } from 'lucide-react';
 
 const AmenityIcon = ({ amenity }: { amenity: string }) => {
   const iconProps = { className: 'w-4 h-4' };

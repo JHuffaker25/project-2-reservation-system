@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableRow, TableCell, TableBody } from '@/components/ui/table';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronLeft, ChevronRight, X, Plus, Edit, Trash2, Image as ImageIcon, CheckCircle2, Ban, ChevronDown, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Image as ImageIcon, CheckCircle2, Ban, ChevronDown, Search } from 'lucide-react';
 
 // Dummy amenities and room types
 const allAmenities = [
@@ -377,7 +377,7 @@ const AddEditRoomModal = ({ open, room, onClose, onSave, roomTypes }: {
 const PAGE_SIZE = 5;
 const UpdateRooms: React.FC = () => {
   const [rooms, setRooms] = useState(dummyRooms);
-  const [roomTypes, setRoomTypes] = useState(dummyRoomTypes);
+  const [roomTypes, ] = useState(dummyRoomTypes);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     available: '',
@@ -388,8 +388,8 @@ const UpdateRooms: React.FC = () => {
   const [selected, setSelected] = useState<string[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editRoom, setEditRoom] = useState<any | null>(null);
-  const [editTypeModalOpen, setEditTypeModalOpen] = useState(false);
-  const [editType, setEditType] = useState<any | null>(null);
+  const [, setEditTypeModalOpen] = useState(false);
+  const [, setEditType] = useState<any | null>(null);
   const [page, setPage] = useState(1);
 
   // Filtering
