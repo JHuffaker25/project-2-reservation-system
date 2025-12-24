@@ -142,8 +142,8 @@ public class AppUserController {
     public ResponseEntity<Object> updateUserPreferences(@PathVariable String id, @RequestBody Map<String, Object> updates) {
         try {
             Boolean emailNotifications = updates.get("emailNotifications") != null ? (Boolean) updates.get("emailNotifications") : null;
-            String display = updates.get("display") != null ? updates.get("display").toString() : null;
-            AppUser updatedUser = appUserService.updateUserPreferences(id, emailNotifications, display);
+            Boolean darkMode = updates.get("darkMode") != null ? (Boolean) updates.get("darkMode") : null;
+            AppUser updatedUser = appUserService.updateUserPreferences(id, emailNotifications, darkMode);
             return ResponseEntity.ok(new AppUserResponseDTO(
                 updatedUser.getId(),
                 updatedUser.getEmail(),

@@ -36,14 +36,13 @@ public class AppUser implements UserDetails {
 	public static class Preferences {
 		
 		private Boolean emailNotifications;
-		private String display; // "dark" or "light"
+		private Boolean darkMode; // true = dark, false = light
 
 		public Preferences() {}
 
-		public Preferences(Boolean emailNotifications, String display) {
-	
+		public Preferences(Boolean emailNotifications, Boolean darkMode) {
 			this.emailNotifications = emailNotifications;
-			this.display = display;
+			this.darkMode = darkMode;
 		}
 
 		public Boolean getEmailNotifications() {
@@ -54,12 +53,12 @@ public class AppUser implements UserDetails {
 			this.emailNotifications = emailNotifications;
 		}
 
-		public String getDisplay() {
-			return display;
+		public Boolean getDarkMode() {
+			return darkMode;
 		}
 
-		public void setDisplay(String display) {
-			this.display = display;
+		public void setDarkMode(Boolean darkMode) {
+			this.darkMode = darkMode;
 		}
 	}
 

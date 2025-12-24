@@ -112,14 +112,14 @@ public class AppUserService implements UserDetailsService {
     }
 
     // Update user preferences (emailNotifications, display)
-    public AppUser updateUserPreferences(String id, Boolean emailNotifications, String display) {
+    public AppUser updateUserPreferences(String id, Boolean emailNotifications, Boolean darkMode) {
         AppUser user = findUserOrThrow(id);
         AppUser.Preferences prefs = user.getPreferences();
         if (prefs == null) {
             prefs = new AppUser.Preferences();
         }
         if (emailNotifications != null) prefs.setEmailNotifications(emailNotifications);
-        if (display != null) prefs.setDisplay(display);
+        if (darkMode != null) prefs.setDarkMode(darkMode);
         user.setPreferences(prefs);
         return appUserRepository.save(user);
     }
