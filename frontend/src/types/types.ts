@@ -31,7 +31,7 @@ export interface PaymentMethod {
     };
 }
 
-type Preferences = {
+export interface Preferences {
   emailNotifications: boolean,
   darkMode: boolean,
 }
