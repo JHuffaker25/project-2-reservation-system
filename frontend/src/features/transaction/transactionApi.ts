@@ -12,7 +12,7 @@ export const transactionApi = baseApi.injectEndpoints({
     }),
     attachPaymentMethod: builder.mutation<any, { userId: string; paymentMethodId: string }>({
       query: ({ userId, paymentMethodId }) => ({
-        url: `/users/${userId}/payment-methods/${paymentMethodId}`,
+        url: `/users/attach/${userId}/payment-methods/${paymentMethodId}`,
         method: 'POST',
       }),
     }),
