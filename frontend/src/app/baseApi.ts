@@ -21,9 +21,6 @@ const baseQuery = fetchBaseQuery({
       const csrfToken = localStorage.getItem('csrfToken');
       if (csrfToken) {
         headers.set('X-XSRF-TOKEN', csrfToken);
-        console.log('[baseApi] CSRF token sent:', csrfToken);
-      } else {
-        console.log('[baseApi] NO CSRF token in localStorage');
       }
     }
     return headers;
