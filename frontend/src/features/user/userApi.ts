@@ -1,4 +1,5 @@
 import { baseApi } from '@/app/baseApi';
+import type { User, Preferences } from '@/types/types';
 
 
 export interface PaymentMethod {
@@ -33,8 +34,28 @@ export const userApi = baseApi.injectEndpoints({
           },
         })),
     }),
+    deleteUserPaymentMethod: builder.mutation<{ success: boolean }, { userId: string; paymentMethodId: string }>({
+      query: ({ userId, paymentMethodId }) => ({
+        url: `/users/delete/${userId}/payment-methods/${paymentMethodId}`,
+        method: 'DELETE',
+      }),
+    }),
+    updateUserPreferences: builder.mutation<Partial<User>, { userId: string; preferences: Preferences }>({
+      query: ({ userId, preferences }) => ({
+        url: `/users/update-preferences/${userId}`,
+        method: 'PUT',
+        body: preferences,
+      }),
+    }),
+    updateUserDetails: builder.mutation<Partial<User>, { userId: string; user: Partial<User> }>({
+      query: ({ userId, user }) => ({
+        url: `/users/update/${userId}`,
+        method: 'PUT',
+        body: user,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetUserPaymentMethodsQuery } = userApi;
+export const { useGetUserPaymentMethodsQuery, useDeleteUserPaymentMethodMutation, useUpdateUserPreferencesMutation, useUpdateUserDetailsMutation } = userApi;
