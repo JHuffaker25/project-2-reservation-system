@@ -56,10 +56,12 @@ public class SecurityConfig {
                
                 //ROOM
                 .requestMatchers("/rooms/new").hasRole("ADMIN") //POST new room
+                .requestMatchers("/rooms/update/{id}").hasRole("ADMIN") //PUT update room
                 .requestMatchers("/rooms/delete/{id}").hasRole("ADMIN") //DELETE room by ID
                 
                 //ROOM TYPE
                 .requestMatchers("/room-types/create").hasRole("ADMIN") //POST create room type
+                .requestMatchers("/room-types/update/{id}").hasRole("ADMIN") //PUT update room type
                 .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN") //DELETE room type by ID
                 
                 //TRANSACTION

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.time.LocalDate;
@@ -57,7 +58,6 @@ public class RoomController {
     }
 
     //GET available rooms by dates, with optional typeId as path variable (/{typeId}/available)
-
     @GetMapping({"/available", "/{typeId}/available"})
     public ResponseEntity<List<Room>> getAvailableRooms(
             @RequestParam List<String> dates,
@@ -74,6 +74,24 @@ public class RoomController {
         }
     }
     
+
+
+//PUT MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Update room details
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Room> updateRoom(@PathVariable String id, @RequestBody Room updatedRoom) {
+        try {
+            Room room = roomService.updateRoom(id, updatedRoom);
+            return ResponseEntity.ok(room);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Invalid room data: " + e.getMessage()).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
+        }
+    }
+
+
    
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////    
 

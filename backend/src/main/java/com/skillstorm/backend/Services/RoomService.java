@@ -100,6 +100,17 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
+    //UPDATE room details by id
+    public Room updateRoom(String id, Room updatedRoom) {
+        Room existingRoom = findRoomById(id);
+        // Update fields (add more as needed)
+        if (updatedRoom.getRoomNumber() != null) existingRoom.setRoomNumber(updatedRoom.getRoomNumber());
+        if (updatedRoom.getTypeId() != null) existingRoom.setTypeId(updatedRoom.getTypeId());
+        if (updatedRoom.getStatus() != null) existingRoom.setStatus(updatedRoom.getStatus());
+        if (updatedRoom.getDatesReserved() != null) existingRoom.setDatesReserved(updatedRoom.getDatesReserved());
+        return roomRepository.save(existingRoom);
+    }
+
 
 
 //DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////

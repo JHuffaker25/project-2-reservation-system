@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -74,6 +75,22 @@ public class RoomTypeController {
         try {
             RoomType savedRoomType = roomTypeService.createRoomType(roomType);
             return new ResponseEntity<>(savedRoomType, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "Invalid room type data: " + e.getMessage()).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").body(null);
+        }
+    }
+
+
+//PUT MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Update room type details
+    @PutMapping("/update/{id}")
+    public ResponseEntity<RoomType> updateRoomType(@PathVariable String id, @RequestBody RoomType updatedRoomType) {
+        try {
+            RoomType roomType = roomTypeService.updateRoomType(id, updatedRoomType);
+            return ResponseEntity.ok(roomType);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().header("Error", "Invalid room type data: " + e.getMessage()).body(null);
         } catch (Exception e) {

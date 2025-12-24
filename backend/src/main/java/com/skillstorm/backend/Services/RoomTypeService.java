@@ -79,6 +79,20 @@ public class RoomTypeService {
 
 
 
+//PUT METHODS////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Update room type details
+    public RoomType updateRoomType(String id, RoomType updatedRoomType) {
+        RoomType existing = findRoomTypeById(id);
+        if (updatedRoomType.getName() != null) existing.setName(updatedRoomType.getName());
+        if (updatedRoomType.getPricePerNight() != null) existing.setPricePerNight(updatedRoomType.getPricePerNight());
+        if (updatedRoomType.getMaxGuests() != null) existing.setMaxGuests(updatedRoomType.getMaxGuests());
+        if (updatedRoomType.getSquareFootage() != null) existing.setSquareFootage(updatedRoomType.getSquareFootage());
+        return roomTypeRepository.save(existing);
+    }
+
+
+
 //DELETE METHODS////////////////////////////////////////////////////////////////////////////////////////////
 
     //Delete a room type by ID
