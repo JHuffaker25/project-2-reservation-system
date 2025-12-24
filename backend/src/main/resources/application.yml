@@ -30,11 +30,13 @@ logging:
 
 
 
-server: 
-    port: 8282
+server:
+    port: ${SERVER_PORT:8282}
     
 
+frontend:
+    url: http://localhost:3000
     
 stripe:
-    public-key: ${PUBLIC_KEY}
-    private-key: ${PRIVATE_KEY}
+    public-key: ${STRIPE_PUBLIC_KEY}
+    private-key: ${STRIPE_SECRET_KEY}
