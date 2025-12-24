@@ -22,7 +22,10 @@ public class SecurityConfig {
     
     //Security filter chain configuration
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+        HttpSecurity http,
+        @Value("${frontend.url:http://localhost:3000}") String frontendUrl
+    ) throws Exception {
     
         http
             .cors(Customizer.withDefaults())
@@ -110,7 +113,7 @@ public class SecurityConfig {
 
             //Redirect to frontend home page upon successful login
             .oauth2Login(oauth2 -> oauth2
-            .defaultSuccessUrl("http://localhost:3000/home", true)); //REPLACE WITH OUR ACTUAL FRONTEND URL
+            .defaultSuccessUrl(frontendUrl + "/home", true));
             
         return http.build();
     }
@@ -120,7 +123,7 @@ public class SecurityConfig {
     //Cors configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
-        @Value("${FRONTEND_URL}") String frontendUrl
+        @Value("${frontend.url:http://localhost:3000}") String frontendUrl
     ) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(frontendUrl));
