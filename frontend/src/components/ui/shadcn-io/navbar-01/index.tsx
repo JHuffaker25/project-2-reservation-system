@@ -127,7 +127,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
       signInText = 'Sign In',
       signInHref = '/signin',
       ctaText = 'Book Now',
-      ctaHref = '/signin',
+      ctaHref = '/rooms',
       onSignInClick,
       onCtaClick,
       ...props
