@@ -1,19 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
-
-type Preferences = {
-  emailNotifications: boolean,
-  darkMode: boolean,
-}
-
-export interface User {
-  email: string
-  id?: string
-  role?: string
-  firstName?: string
-  lastName?: string
-  preferences?: Preferences
-}
+import type { User } from "@/types/types"
 
 interface AuthState {
   isAuthenticated: boolean

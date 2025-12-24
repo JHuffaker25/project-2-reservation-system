@@ -31,8 +31,20 @@ export interface PaymentMethod {
     };
 }
 
+type Preferences = {
+  emailNotifications: boolean,
+  darkMode: boolean,
+}
+
 export interface User {
-    id: string;
+  email: string
+  password?: string
+  id?: string
+  role?: string
+  firstName?: string
+  lastName?: string
+  phone?: string
+  preferences?: Preferences
 }
 
 export interface Room {
@@ -53,6 +65,8 @@ export interface Transaction {
   authorizedAt: string; // ISO string
   capturedAt: string; // ISO string
   cancelledAt: string; // ISO string
+  transactionId?: string;
+  last4?: string;
 }
 
 export interface UpdateReservationRequest {
