@@ -23,8 +23,9 @@ import {
   Trash2,
   X,
   AlertTriangle,
+  Receipt,
 } from 'lucide-react';
-import { useCancelReservationMutation, useGetUserReservationsQuery, useUpdateReservationMutation } from '@/features/reservation/reservationApi';
+import { useCancelReservationMutation, useGetUserReservationsQuery, useUpdateReservationMutation, useGetReservationTransactionQuery } from '@/features/reservation/reservationApi';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { setUserReservations } from '@/features/reservation/reservationSlice';
 import type { Reservation } from '@/types/types';
@@ -46,6 +47,7 @@ const ReservationCard = ({
   onCancel: (id: string) => void;
   onModify: (id: string) => void;
 }) => {
+  const [showReceipt, setShowReceipt] = useState(false);
   // Format date as YYYY-MM-DD from ISO string (UTC, no timezone shift)
   function formatDateUTC(dateString: string) {
     if (!dateString) return '';
@@ -62,77 +64,180 @@ const ReservationCard = ({
   const isUpcoming = checkInDate > today;
 
   const { data: roomType, isLoading } = useGetRoomTypeByReservationIdQuery(reservation.id ?? '');
+  // Fetch transaction data for this reservation
+  const { data: transaction, isLoading: isTransactionLoading } = useGetReservationTransactionQuery(reservation.id ?? '');
   
-  if (isLoading || isPreloading) return <Loader />;
+  if (isLoading || isPreloading || isTransactionLoading) return <Loader />;
   return (
-    <Card className="overflow-hidden pt-0">
-      <div className="relative h-54 bg-gray-200 overflow-hidden">
-        <img
-          src={roomType?.images[0]}
-          alt={roomType?.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      <CardContent className="space-y-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Reservation for:</p>
-          <h3 className="text-lg font-semibold">{roomType?.name} Room</h3>
-          <p className="text-sm text-muted-foreground">ID: {reservation.id}</p>
+    <>
+      <Card className="overflow-hidden pt-0">
+        <div className="relative h-54 bg-gray-200 overflow-hidden">
+          <img
+            src={roomType?.images[0]}
+            alt={roomType?.name}
+            className="w-full h-full object-cover"
+          />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 py-4 border-y">
+        <CardContent className="space-y-4">
           <div>
-            <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Check-in <span className=" font-medium text-sm">(3:00 PM)</span></p>
-            
-            <p className="font-semibold">{checkInDateStr}</p>
+            <p className="text-sm text-muted-foreground">Reservation for:</p>
+            <h3 className="text-lg font-semibold">{roomType?.name} Room</h3>
+            <p className="text-sm text-muted-foreground">ID: {reservation.id}</p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Check-out <span className=" font-medium text-sm">(12:00 PM)</span></p>
-            <p className="font-semibold">{checkOutDateStr}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Duration</p>
-            <p className="font-semibold">{nights} Night{nights > 1 ? 's' : ''}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Guests</p>
-            <p className="font-semibold">{reservation.numGuests}</p>
-          </div>
-        </div>
 
-        <div className="space-y-1">
-          
-          <div className="flex justify-between text-lg font-bold pt-2">
-            <span>Total</span>
-            <span className="text-primary">${reservation.totalPrice}</span>
+          <div className="grid grid-cols-2 gap-4 py-4 border-y">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Check-in <span className=" font-medium text-sm">(3:00 PM)</span></p>
+              <p className="font-semibold">{checkInDateStr}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Check-out <span className=" font-medium text-sm">(12:00 PM)</span></p>
+              <p className="font-semibold">{checkOutDateStr}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Duration</p>
+              <p className="font-semibold">{nights} Night{nights > 1 ? 's' : ''}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold uppercase mb-1">Guests</p>
+              <p className="font-semibold">{reservation.numGuests}</p>
+            </div>
           </div>
-        </div>
 
-        {isUpcoming && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-lg font-bold pt-2">
+              <span>Total</span>
+              <span className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowReceipt(true)}
+                  className="cursor-pointer text-muted-foreground hover:text-primary"
+                  title="View Receipt"
+                >
+                  <Receipt className="h-5 w-5" />
+                </Button>
+                <span className="text-primary">${reservation.totalPrice}</span>
+              </span>
+            </div>
+          </div>
+
           <div className="flex gap-2 pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onModify(reservation?.id || '')}
-              className="flex-1 gap-2 cursor-pointer"
-            >
-              <Edit2 className="h-4 w-4" />
-              Modify
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => onCancel(reservation?.id || '')}
-              className="flex-1 gap-2 cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-              Cancel
-            </Button>
+            {isUpcoming && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onModify(reservation?.id || '')}
+                  className="flex-1 gap-2 cursor-pointer"
+                >
+                  <Edit2 className="h-4 w-4" />
+                  Modify
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onCancel(reservation?.id || '')}
+                  className="flex-1 gap-2 cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Cancel
+                </Button>
+              </>
+            )}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      {/* Receipt Dialog */}
+      <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
+        <DialogContent className="flex flex-col items-center bg-transparent shadow-none border-none">
+          <div className="bg-white w-full max-w-xs shadow-lg border border-dashed border-gray-300 px-6 py-6 font-mono relative overflow-hidden receipt-paper">
+            <div className="absolute left-0 right-0 top-0 flex justify-between -mt-3">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="w-2 h-2 bg-white rounded-full border border-gray-300" />
+              ))}
+            </div>
+            <div className="absolute left-0 right-0 bottom-0 flex justify-between -mb-3">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="w-2 h-2 bg-white rounded-full border border-gray-300" />
+              ))}
+            </div>
+            <div className="text-center mb-2">
+              <span className="block text-lg font-bold tracking-widest mb-1">HOTEL RECEIPT</span>
+              
+            </div>
+            <div className="border-b border-dashed border-gray-300 mb-2" />
+            <div className="flex justify-between mb-1">
+              <span>Room Type</span>
+              <span>{roomType?.name || 'Deluxe Suite'}</span>
+            </div>
+            <div className="flex justify-between mb-1">
+              <span>Check-in</span>
+              <span>{checkInDateStr}</span>
+            </div>
+            <div className="flex justify-between mb-1">
+              <span>Check-out</span>
+              <span>{checkOutDateStr}</span>
+            </div>
+            <div className="flex justify-between mb-1">
+              <span>Guests</span>
+              <span>{reservation.numGuests}</span>
+            </div>
+            <div className="flex justify-between mb-1">
+              <span>Nights</span>
+              <span>{nights}</span>
+            </div>
+            <div className="flex justify-between mb-1">
+              <span>Price/Night</span>
+              <span>${roomType?.pricePerNight ?? 120}.00</span>
+            </div>
+            <div className="border-b border-dashed border-gray-300 my-2" />
+            <div className="flex justify-between font-bold text-base mb-1">
+              <span>Total Paid</span>
+              <span>
+                ${reservation.totalPrice}.00
+              </span>
+            </div>
+            <div className="flex justify-between mb-1">
+              <span>Payment</span>
+              <span>
+                {transaction?.paymentIntentId
+                  ? `Card •••• ${transaction?.last4 ?? 'XXXX'}`
+                  : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between mb-1">
+              <span>Date Paid</span>
+              <span>
+                {transaction?.capturedAt
+                  ? new Date(transaction.capturedAt).toLocaleDateString()
+                  : checkInDateStr}
+              </span>
+            </div>
+            
+            <div className="border-b border-dashed border-gray-300 my-2" />
+            <div className="flex flex-col gap-1 mb-1">
+                <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
+                  <span className="font-mono text-gray-400">Reservation ID:</span>
+                  <span className="font-mono py-0.5 rounded">{reservation.id}</span>
+                </div>
+                {transaction?.id && (
+                  <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
+                    <span className="font-mono text-gray-400">Transaction ID:</span>
+                    <span className="font-monopx-2 py-0.5 rounded">{transaction.id}</span>
+                  </div>
+                )}
+              </div>
+              <div className="border-b border-dashed border-gray-300 my-2" />
+            <div className="text-center text-xs text-gray-400 mt-2">Thank you for your stay!</div>
+            <div className="flex justify-center mt-3">
+              <Button onClick={() => setShowReceipt(false)} type="button" className="cursor-pointer">Close</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

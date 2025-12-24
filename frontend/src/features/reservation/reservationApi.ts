@@ -40,8 +40,15 @@ export const reservationApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: { message: string }) => response,
     }),
+    getReservationTransaction: builder.query<any, string>({
+      query: (reservationId) => ({
+        url: `/transactions/reservation/${reservationId}`,
+        method: 'GET',
+      }),
+      transformResponse: (response: any) => response,
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetReservationsQuery, useGetUserReservationsQuery, useCreateReservationMutation, useUpdateReservationMutation, useCancelReservationMutation } = reservationApi;
+export const { useGetReservationsQuery, useGetUserReservationsQuery, useCreateReservationMutation, useUpdateReservationMutation, useCancelReservationMutation, useGetReservationTransactionQuery } = reservationApi;
