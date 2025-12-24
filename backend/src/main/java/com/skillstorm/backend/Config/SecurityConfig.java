@@ -68,7 +68,7 @@ public class SecurityConfig {
                 //APPUSER
                 .requestMatchers("/users/me").hasAnyRole("ADMIN", "CUSTOMER") //GET current user info
                 .requestMatchers("/users/{userId}/payment-methods").hasAnyRole("ADMIN", "CUSTOMER") //GET user payment methods
-                .requestMatchers("/users/csrf").hasAnyRole("ADMIN", "CUSTOMER") //GET CSRF token
+                // .requestMatchers("/users/csrf").hasAnyRole("ADMIN", "CUSTOMER") //GET CSRF token
                 .requestMatchers("/users/attach/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER") //POST attach payment method
                 .requestMatchers("/users/delete/{userId}/payment-methods/{paymentMethodId}").hasAnyRole("ADMIN", "CUSTOMER") //DELETE payment method from user
 
