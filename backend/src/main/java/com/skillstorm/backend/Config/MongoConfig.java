@@ -14,8 +14,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
@@ -33,18 +33,22 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Bean
     public MongoClient mongoClient() {
         try {
-            // Load the AWS DocumentDB certificate
+            // Load ALL AWS DocumentDB certificates from the bundle
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            InputStream certInputStream = new ClassPathResource("global-bundle.pem").getInputStream();
-            X509Certificate caCert = (X509Certificate) cf.generateCertificate(certInputStream);
-            certInputStream.close();
 
-            // Create a KeyStore containing the certificate
+            // Create a KeyStore to hold all certificates from the bundle
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(null, null);
-            keyStore.setCertificateEntry("documentdb-ca", caCert);
 
-            // Create a TrustManager that trusts the certificate
+            // Load all certificates from the PEM bundle
+            try (InputStream certInputStream = new ClassPathResource("global-bundle.pem").getInputStream()) {
+                int certIndex = 0;
+                for (Certificate cert : cf.generateCertificates(certInputStream)) {
+                    keyStore.setCertificateEntry("documentdb-ca-" + certIndex++, cert);
+                }
+            }
+
+            // Create a TrustManager that trusts all certificates in the keystore
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(keyStore);
 

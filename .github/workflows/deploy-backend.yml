@@ -39,9 +39,6 @@ jobs:
           # Copy JAR file and rename to application.jar
           cp target/backend-0.0.1-SNAPSHOT.jar deploy/application.jar
 
-          # Copy .ebextensions from project root
-          cp -r ../.ebextensions deploy/
-
           # Create Procfile
           echo "web: java -jar application.jar" > deploy/Procfile
 
