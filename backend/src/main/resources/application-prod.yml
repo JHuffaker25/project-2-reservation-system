@@ -15,15 +15,15 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
-          
+
   mongodb:
     uri: ${MONGO_URI}
+    ssl:
+      enabled: true
 
   data:
     mongodb:
-      connect-timeout: 30000
-      socket-timeout: 60000
-      server-selection-timeout: 30000
+      auto-index-creation: true
   
   security:
         oauth2:
