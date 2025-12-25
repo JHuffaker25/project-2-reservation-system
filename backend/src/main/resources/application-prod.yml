@@ -18,8 +18,6 @@ spring:
 
   mongodb:
     uri: ${MONGO_URI}
-    ssl:
-      enabled: true
 
   data:
     mongodb:
