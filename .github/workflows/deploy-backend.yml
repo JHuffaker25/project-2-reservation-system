@@ -31,6 +31,29 @@ jobs:
       - name: List target directory
         run: ls -la target/
 
+      - name: Create deployment bundle
+        run: |
+          # Create deployment directory
+          mkdir -p deploy
+
+          # Copy JAR file and rename to application.jar
+          cp target/backend-0.0.1-SNAPSHOT.jar deploy/application.jar
+
+          # Copy .ebextensions from project root
+          cp -r ../.ebextensions deploy/
+
+          # Create Procfile
+          echo "web: java -jar application.jar" > deploy/Procfile
+
+          # Create ZIP bundle
+          cd deploy
+          zip -r ../backend-deployment.zip .
+          cd ..
+
+          # List contents
+          ls -la
+          unzip -l backend-deployment.zip
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -38,10 +61,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy JAR to S3
+      - name: Deploy to S3
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
-            aws s3 cp target/backend-0.0.1-SNAPSHOT.jar s3://project2-frontend-group1-397345411365-useast1/backend/
+            aws s3 cp backend-deployment.zip s3://project2-frontend-group1-397345411365-useast1/backend/backend-deployment-$(date +%Y%m%d-%H%M%S).zip
+            aws s3 cp backend-deployment.zip s3://project2-frontend-group1-397345411365-useast1/backend/backend-deployment.zip
           elif [ "${{ github.ref_name }}" = "dev" ]; then
-            aws s3 cp target/backend-0.0.1-SNAPSHOT.jar s3://project2-frontend-group1-dev-397345411365-us-east-1/backend/
+            aws s3 cp backend-deployment.zip s3://project2-frontend-group1-dev-397345411365-us-east-1/backend/backend-deployment-$(date +%Y%m%d-%H%M%S).zip
+            aws s3 cp backend-deployment.zip s3://project2-frontend-group1-dev-397345411365-us-east-1/backend/backend-deployment.zip
           fi
