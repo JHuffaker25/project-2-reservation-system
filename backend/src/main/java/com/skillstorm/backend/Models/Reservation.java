@@ -23,7 +23,7 @@ public class Reservation {
 
     private String lastName;
 
-    private String roomNumber;
+    private Integer roomNumber;
 
     private LocalDate checkIn;
 
@@ -43,7 +43,7 @@ public class Reservation {
     public Reservation(String userId, String roomId, LocalDate checkIn,
                        LocalDate checkOut, Integer numGuests, String status, BigDecimal totalPrice,
                        String paymentIntentId, String transactionId, String firstName,
-                       String lastName, String roomNumber) {
+                       String lastName, Integer roomNumber) {
 
         this.userId = userId;
         this.roomId = roomId;
@@ -156,11 +156,11 @@ public class Reservation {
         this.lastName = lastName;
     }
 
-    public String getRoomNumber() {
+    public Integer getRoomNumber() {
         return roomNumber;
     }
 
-    public void setRoomNumber(String roomNumber) {
+    public void setRoomNumber(Integer roomNumber) {
         this.roomNumber = roomNumber;
     }
 

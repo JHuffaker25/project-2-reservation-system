@@ -2,6 +2,7 @@ package com.skillstorm.backend.Services;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -295,32 +296,64 @@ public class ReservationService {
             throw new IllegalArgumentException("Total price must be greater than 0");
         }
 
-        // Get room and check availability BEFORE updating reservation
-        Room room = roomService.findRoomById(reservation.getRoomId());
-        List<LocalDate> datesReserved = new ArrayList<>(room.getDatesReserved() != null ? room.getDatesReserved() : new ArrayList<>());
-        
-        // Remove old reservation dates from the list to check availability
+        //Check that the room number is valid
+        if (request.roomNumber() == null) {
+            throw new IllegalArgumentException("Room number is required");
+        }
+
+        // Get the old room to release its reserved dates
+        Room oldRoom = roomService.findRoomById(reservation.getRoomId());
+
+        // Get the new room (could be same as old room or a different room)
+        Room newRoom = roomService.findRoomByRoomNumber(request.roomNumber());
+
+        // Remove old reservation dates from the old room
+        List<LocalDate> oldRoomDatesReserved = new ArrayList<>(oldRoom.getDatesReserved() != null ? oldRoom.getDatesReserved() : new ArrayList<>());
         LocalDate oldDate = reservation.getCheckIn();
         while (oldDate.isBefore(reservation.getCheckOut())) {
-            datesReserved.remove(oldDate);
+            oldRoomDatesReserved.remove(oldDate);
             oldDate = oldDate.plusDays(1);
         }
+        oldRoom.setDatesReserved(oldRoomDatesReserved);
 
-        // Verify that the new checkin and checkout dates are available
-        LocalDate date = request.checkIn();
-        while (date.isBefore(request.checkOut())) {
-            if (datesReserved.contains(date)) {
-                throw new IllegalArgumentException("Room is not available for the selected dates");
-            }
-            date = date.plusDays(1);
+        // If it's the same room, use the oldRoomDatesReserved (which already has old dates removed)
+        // Otherwise, get the new room's current dates
+        List<LocalDate> newRoomDatesReserved;
+        if (oldRoom.getId().equals(newRoom.getId())) {
+            newRoomDatesReserved = new ArrayList<>(oldRoomDatesReserved);
+        } else {
+            newRoomDatesReserved = new ArrayList<>(newRoom.getDatesReserved() != null ? newRoom.getDatesReserved() : new ArrayList<>());
         }
 
+        // Verify new dates are available
+        LocalDate checkDate = request.checkIn();
+        while (checkDate.isBefore(request.checkOut())) {
+            if (newRoomDatesReserved.contains(checkDate)) {
+                throw new IllegalArgumentException("Room is not available for the selected dates");
+            }
+            checkDate = checkDate.plusDays(1);
+        }
+
+        // Add new reservation dates to the new room
+        LocalDate newDate = request.checkIn();
+        while (newDate.isBefore(request.checkOut())) {
+            if (!newRoomDatesReserved.contains(newDate)) {
+                newRoomDatesReserved.add(newDate);
+            }
+            newDate = newDate.plusDays(1);
+        }
+        newRoom.setDatesReserved(newRoomDatesReserved);
+
         // Update reservation fields
+        reservation.setRoomId(newRoom.getId());
+        reservation.setRoomNumber(request.roomNumber());
         reservation.setCheckIn(request.checkIn());
         reservation.setCheckOut(request.checkOut());
         reservation.setNumGuests(request.numGuests());
         reservation.setTotalPrice(request.totalPrice());
-        
+        reservation.setFirstName(request.firstName());
+        reservation.setLastName(request.lastName());
+
         //STRIPE LOGIC///
 
         // Get user for Stripe customer ID and email
@@ -334,14 +367,14 @@ public class ReservationService {
         String oldPaymentIntentId = reservation.getPaymentIntentId();
         PaymentIntent oldPaymentIntent = PaymentIntent.retrieve(oldPaymentIntentId);
         String paymentMethodId = oldPaymentIntent.getPaymentMethod();
-        
+
         if (paymentMethodId == null) {
             throw new IllegalArgumentException("Cannot update reservation: original payment method not found");
         }
-        
+
         // Cancel the old PaymentIntent
         stripeService.cancelPayment(oldPaymentIntentId);
-        
+
         // Create new PaymentIntent with updated amount
         Long amountInCents = request.totalPrice().multiply(BigDecimal.valueOf(100)).longValue();
         PaymentIntent newPaymentIntent = stripeService.createPaymentIntent(
@@ -350,10 +383,10 @@ public class ReservationService {
                 user.getStripeCustomerId(),
                 paymentMethodId,
                 user.getEmail());
-        
+
         // Update reservation with new PaymentIntent ID
         reservation.setPaymentIntentId(newPaymentIntent.getId());
-        
+
         // Update transaction with new PaymentIntent ID and amount
         Transaction transaction = transactionService.getTransactionByReservationId(reservation.getId());
         transaction.setPaymentIntentId(newPaymentIntent.getId());
@@ -364,17 +397,15 @@ public class ReservationService {
         // Update reservation with transaction ID
         reservation.setTransactionId(transaction.getId());
 
-        // Add new reservation dates to the list 
-        LocalDate addDate = request.checkIn();
-        while (addDate.isBefore(request.checkOut())) {
-            if (!datesReserved.contains(addDate)) {
-                datesReserved.add(addDate);
-            }
-            addDate = addDate.plusDays(1);
+        // Save both rooms (handles case where old and new room are the same)
+        if (oldRoom.getId().equals(newRoom.getId())) {
+            // Same room - save once with updated dates
+            roomService.saveRoom(newRoom);
+        } else {
+            // Different rooms - save both
+            roomService.saveRoom(oldRoom);
+            roomService.saveRoom(newRoom);
         }
-        
-        room.setDatesReserved(datesReserved);
-        roomService.saveRoom(room);
 
         return reservationRepository.save(reservation);
     }

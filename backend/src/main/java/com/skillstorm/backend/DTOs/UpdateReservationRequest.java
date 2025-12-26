@@ -7,6 +7,7 @@ public record UpdateReservationRequest(
     LocalDate checkIn,
     LocalDate checkOut,
     Integer numGuests,
-    BigDecimal totalPrice
+    BigDecimal totalPrice,
+    Integer roomNumber
 ) {}
     

@@ -13,5 +13,5 @@ public record CreateReservationRequest(
     String paymentMethodId,
     String firstName, 
     String lastName,
-    String roomNumber
+    Integer roomNumber
 ) {}

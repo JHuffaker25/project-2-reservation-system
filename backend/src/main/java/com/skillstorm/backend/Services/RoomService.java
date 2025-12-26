@@ -38,7 +38,16 @@ public class RoomService {
             throw new IllegalArgumentException("No room found with id: " + id);
         }
         return roomOpt.get();
-    
+
+    }
+
+    //GET room by room number
+    public Room findRoomByRoomNumber(Integer roomNumber) {
+        Optional<Room> roomOpt = roomRepository.findByRoomNumber(roomNumber);
+        if (roomOpt.isEmpty()) {
+            throw new IllegalArgumentException("No room found with room number: " + roomNumber);
+        }
+        return roomOpt.get();
     }
 
     // GET available rooms by dates and optional typeId (case-insensitive)
