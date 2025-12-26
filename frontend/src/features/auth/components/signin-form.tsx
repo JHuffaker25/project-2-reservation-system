@@ -51,7 +51,11 @@ export function SigninForm({
       const user = await fetchUser().unwrap();
       dispatch(login({ email }));
       dispatch(setUserSessionData(user));
-      navigate(redirectTo);
+      if (user?.role === 'ADMIN') {
+        navigate('/manage-reservations');
+      } else {
+        navigate(redirectTo);
+      }
     } catch {
       clearCredentials();
       setError("Invalid email or password");

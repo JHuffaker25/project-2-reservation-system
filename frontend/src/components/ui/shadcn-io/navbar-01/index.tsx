@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { clearCredentials } from '@/features/auth/authMemory';
+import { useLogoutMutation } from '@/features/auth/authApi';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -254,36 +255,39 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
             {(() => {
               const auth = useAppSelector(state => state.auth);
               if (auth.isAuthenticated) {
-                return (
-                  <>
-                    <p className="text-sm font-medium">
-                        Hello, {auth.user?.firstName || auth.user?.email}!
-                    </p>
-                    <Link to="/profile" className={
-                      cn(
-                        "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 no-underline",
-                        window.location.pathname === "/profile"
-                          ? "bg-accent text-accent-foreground"
-                          : "text-foreground/80 hover:text-foreground"
-                      )
-                    }>
-                      Profile
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 no-underline text-foreground/80 hover:text-foreground cursor-pointer"
-                      onClick={() => {
-                        clearCredentials();
-                        dispatch({ type: 'auth/logout' });
-                        navigate('/');
-                        window.location.reload();
-                      }}
-                    >
-                      Sign Out
-                    </Button>
-                  </>
-                );
+                  const [logout] = useLogoutMutation();
+                  return (
+                    <>
+                      <p className="text-sm font-medium">
+                          Hello, {auth.user?.firstName || auth.user?.email}!
+                      </p>
+                      <Link to="/profile" className={
+                        cn(
+                          "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 no-underline",
+                          window.location.pathname === "/profile"
+                            ? "bg-accent text-accent-foreground"
+                            : "text-foreground/80 hover:text-foreground"
+                        )
+                      }>
+                        Profile
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 no-underline text-foreground/80 hover:text-foreground cursor-pointer"
+                        onClick={async () => {
+                          try {
+                            await logout().unwrap();
+                          } catch {}
+                          clearCredentials();
+                          dispatch({ type: 'auth/logout' });
+                          window.location.reload();
+                        }}
+                      >
+                        Sign Out
+                      </Button>
+                    </>
+                  );
               } else {
                 return (
                   <>

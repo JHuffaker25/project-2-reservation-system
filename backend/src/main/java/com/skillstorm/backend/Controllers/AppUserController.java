@@ -24,6 +24,10 @@ import com.skillstorm.backend.Services.AppUserService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentMethod;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("/users")
 public class AppUserController {
@@ -211,6 +215,26 @@ public class AppUserController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
         }
+    }
+
+        // LOGOUT endpoint
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request, HttpServletResponse response) {
+        // Invalidate session
+        request.getSession().invalidate();
+
+        // Clear JSESSIONID cookie
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0);
+        // Optionally set domain if needed: cookie.setDomain("yourdomain.com");
+        response.addCookie(cookie);
+
+        // Return success message
+        Map<String, String> body = new HashMap<>();
+        body.put("message", "Logged out");
+        return ResponseEntity.ok(body);
     }
 
 
