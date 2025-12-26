@@ -8,7 +8,6 @@ export interface AuthResponse {
 
 export const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-
         // get the user details from the server. credentials are sent via baseQuery headers
         getUserData: builder.query<User, void>({
             query: () => ({
@@ -23,7 +22,13 @@ export const authApi = baseApi.injectEndpoints({
                 body: newUser,
             }),
         }),
+        logout: builder.mutation<{ message: string }, void>({
+            query: () => ({
+                url: "/users/logout",
+                method: "POST",
+            }),
+        }),
     }),
 });
 
-export const { useGetUserDataQuery, useLazyGetUserDataQuery, useCreateUserMutation } = authApi;
+export const { useGetUserDataQuery, useLazyGetUserDataQuery, useCreateUserMutation, useLogoutMutation } = authApi;
