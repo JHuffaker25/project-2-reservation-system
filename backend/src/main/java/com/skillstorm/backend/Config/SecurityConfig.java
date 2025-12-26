@@ -120,7 +120,7 @@ public class SecurityConfig {
                 .userInfoEndpoint(userInfo -> userInfo
                     .oidcUserService(customOAuth2UserService)
                 )
-                //.defaultSuccessUrl(frontendUrl + "/home", true)
+                .defaultSuccessUrl(frontendUrl + "/", true)
             )
 
 
