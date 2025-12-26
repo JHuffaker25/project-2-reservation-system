@@ -124,7 +124,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
       className,
       logo = <Logo />,
       logoHref = '/',
-      navigationLinks = getNavLinksByRole(),
+      navigationLinks,
       signInText = 'Sign In',
       signInHref = '/signin',
       ctaText = 'Book Now',
@@ -138,6 +138,9 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
     const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
     const dispatch = useAppDispatch();
+
+    // Fix: Only call getNavLinksByRole (which uses hooks) inside the component
+    const navLinks = navigationLinks ?? getNavLinksByRole();
 
     useEffect(() => {
       const checkWidth = () => {
@@ -169,6 +172,8 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
       }
     }, [ref]);
 
+    const [logout] = useLogoutMutation();
+
     return (
       <header
         ref={combinedRef}
@@ -196,7 +201,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                 <PopoverContent align="start" className="w-48 p-2">
                   <NavigationMenu className="max-w-none">
                     <NavigationMenuList className="flex-col items-start gap-1">
-                      {navigationLinks.map((link, index) => (
+                      {navLinks.map((link, index) => (
                         <NavigationMenuItem key={index} className="w-full">
                           <button
                             className={cn(
@@ -230,7 +235,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
               {!isMobile && (
                 <NavigationMenu className="flex">
                   <NavigationMenuList className="gap-1">
-                    {navigationLinks.map((link, index) => (
+                    {navLinks.map((link, index) => (
                       <NavigationMenuItem key={index}>
                         <Link to={link.href} className={
                           cn(
@@ -254,7 +259,6 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
             {(() => {
               const auth = useAppSelector(state => state.auth);
               if (auth.isAuthenticated) {
-                  const [logout] = useLogoutMutation();
                   return (
                     <>
                       <p className="text-sm font-medium">
