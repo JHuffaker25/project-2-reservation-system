@@ -10,5 +10,8 @@ public record CreateReservationRequest(
     LocalDate checkOut,
     Integer numGuests,
     BigDecimal totalPrice,
-    String paymentMethodId
+    String paymentMethodId,
+    String firstName, 
+    String lastName,
+    String roomNumber
 ) {}

@@ -111,6 +111,9 @@ public class ReservationService {
         reservation.setCheckOut(request.checkOut());
         reservation.setNumGuests(request.numGuests());
         reservation.setTotalPrice(request.totalPrice());
+        reservation.setFirstName(request.firstName());
+        reservation.setLastName(request.lastName());
+        reservation.setRoomNumber(request.roomNumber());
 
         // Convert price to cents for Stripe
         Long amountInCents = request.totalPrice().multiply(BigDecimal.valueOf(100)).longValue();
