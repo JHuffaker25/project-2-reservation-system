@@ -1,15 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
-export interface RoomType {
-    id: string;
-    name: string;
-    description: string;
-    pricePerNight: number;
-    maxGuests: number;
-    amenities: string[];
-    squareFootage: number;
-    images: string[];
-}
+import type { RoomType } from "@/types/types";
 
 const roomTypeSlice = createSlice({
     name: "roomTypes",

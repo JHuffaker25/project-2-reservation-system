@@ -31,7 +31,7 @@ import { setUserReservations } from '@/features/reservation/reservationSlice';
 import type { Reservation } from '@/types/types';
 import { useGetRoomTypeByReservationIdQuery } from '@/features/roomType/roomTypeApi';
 import Loader from '@/components/loader';
-import type { RoomType } from '@/features/roomType/roomTypeSlice';
+import type { RoomType } from '@/types/types';
 import type { UpdateReservationRequest } from '@/types/types';
 
 
