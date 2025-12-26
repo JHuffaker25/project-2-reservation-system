@@ -1,8 +1,7 @@
+
 package com.skillstorm.backend.Config;
 
-
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +15,8 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.skillstorm.backend.Services.CustomOAuth2UserService;
 
@@ -23,6 +24,15 @@ import com.skillstorm.backend.Services.CustomOAuth2UserService;
 
 @Configuration
 public class SecurityConfig {
+
+        // Custom entry point to suppress browser HTTP Basic popups
+        @Bean
+        public AuthenticationEntryPoint noPopupBasicAuthEntryPoint() {
+            return (request, response, authException) -> {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Unauthorized");
+            };
+        }
     
     
     //Security filter chain configuration
@@ -126,7 +136,7 @@ public class SecurityConfig {
 
 
             //force logout/delete tokens if needed
-            .httpBasic(Customizer.withDefaults())
+            .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(noPopupBasicAuthEntryPoint()))
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .invalidateHttpSession(true)
