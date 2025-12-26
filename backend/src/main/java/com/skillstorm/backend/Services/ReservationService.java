@@ -351,8 +351,6 @@ public class ReservationService {
         reservation.setCheckOut(request.checkOut());
         reservation.setNumGuests(request.numGuests());
         reservation.setTotalPrice(request.totalPrice());
-        reservation.setFirstName(request.firstName());
-        reservation.setLastName(request.lastName());
 
         //STRIPE LOGIC///
 
