@@ -31,10 +31,10 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_BASE_URL: http://group1-hotel-dev-env.eba-fqsp3cug.us-east-1.elasticbeanstalk.com
+          VITE_API_BASE_URL: http://Group1-hotel-dev-env.eba-fqsp3cug.us-east-1.elasticbeanstalk.com
           VITE_STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
           VITE_STRIPE_PRIVATE_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          GOOGLE_LOGIN_URI: http://group1-hotel-dev-env.eba-fqsp3cug.us-east-1.elasticbeanstalk.com/oauth2/authorization/google
+          GOOGLE_LOGIN_URI: http://Group1-hotel-dev-env.eba-fqsp3cug.us-east-1.elasticbeanstalk.com/oauth2/authorization/google
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
