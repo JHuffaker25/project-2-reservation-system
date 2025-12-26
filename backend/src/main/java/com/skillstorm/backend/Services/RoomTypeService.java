@@ -88,6 +88,7 @@ public class RoomTypeService {
         if (updatedRoomType.getPricePerNight() != null) existing.setPricePerNight(updatedRoomType.getPricePerNight());
         if (updatedRoomType.getMaxGuests() != null) existing.setMaxGuests(updatedRoomType.getMaxGuests());
         if (updatedRoomType.getSquareFootage() != null) existing.setSquareFootage(updatedRoomType.getSquareFootage());
+        if (updatedRoomType.getAmenities() != null) existing.setAmenities(updatedRoomType.getAmenities());
         return roomTypeRepository.save(existing);
     }
 
