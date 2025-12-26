@@ -36,11 +36,15 @@ public class Transaction {
     //added recently, may delete later 
     private LocalDateTime cancelledAt;
 
+    private String firstName;
+    
+    private String lastName; 
+
     // Constructors
     public Transaction() {}
 
     public Transaction(String userId, String reservationId, String paymentIntentId, String transactionStatus, Long amount, 
-                       String currency, LocalDateTime authorizedAt, LocalDateTime capturedAt) {
+                       String currency, LocalDateTime authorizedAt, LocalDateTime capturedAt, LocalDateTime cancelledAt, String firstName, String lastName) {
         this.userId = userId;
         this.reservationId = reservationId;
         this.paymentIntentId = paymentIntentId;
@@ -49,6 +53,9 @@ public class Transaction {
         this.currency = currency;
         this.authorizedAt = authorizedAt;
         this.capturedAt = capturedAt;
+        this.cancelledAt = cancelledAt;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
     // Getters and Setters
@@ -138,5 +145,21 @@ public class Transaction {
 
     public void setCancelledAt(LocalDateTime cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 }

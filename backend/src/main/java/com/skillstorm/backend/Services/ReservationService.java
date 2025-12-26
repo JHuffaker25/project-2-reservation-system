@@ -143,9 +143,9 @@ public class ReservationService {
         //Must make a new reservation object to get the id from the reservation (MONGO DB creates an id with the save)
         Reservation saved = reservationRepository.save(reservation);
 
-       //Create a corresponding transaction with the reservation id
+        //Create transaction record for this reservation
         Transaction transaction = transactionService.createTransactionfromPaymentIntent(
-        paymentIntent, saved.getId(), request.userId());
+        paymentIntent, saved.getId(), request.userId(), request.firstName(), request.lastName());
 
         //Link the transaction to the reservation
         saved.setTransactionId(transaction.getId());

@@ -63,7 +63,8 @@ public class TransactionService {
 
 
     //CREATE new transaction from PaymentIntent
-    public Transaction createTransactionfromPaymentIntent(PaymentIntent paymentIntent, String reservationId, String userId) {
+    public Transaction createTransactionfromPaymentIntent(PaymentIntent paymentIntent, String reservationId, String userId
+    , String firstName, String lastName) {
         Transaction tx = new Transaction();
         tx.setPaymentIntentId(paymentIntent.getId());
         tx.setTransactionStatus(paymentIntent.getStatus());
@@ -72,6 +73,8 @@ public class TransactionService {
         tx.setAuthorizedAt(LocalDateTime.now());
         tx.setUserId(userId);
         tx.setReservationId(reservationId);
+        tx.setFirstName(firstName);
+        tx.setLastName(lastName);
 
         // Capture last4 digits of card from PaymentMethod
         try {
