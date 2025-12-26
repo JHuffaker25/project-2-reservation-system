@@ -28,6 +28,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
     const [fetchUser] = useLazyGetUserDataQuery()
+    const googleSignupUri = import.meta.env.VITE_GOOGLE_SIGNUP_URI
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -167,7 +168,18 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 <Button type="submit" className="cursor-pointer" disabled={isLoading}>
                   {isLoading ? "Creating..." : "Create Account"}
                 </Button>
-                <Button variant="outline" type="button" className="cursor-pointer">
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (googleSignupUri) {
+                      window.location.href = googleSignupUri
+                    } else {
+                      setApiError("Google signup is not configured.")
+                    }
+                  }}
+                >
                   Sign up with Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
