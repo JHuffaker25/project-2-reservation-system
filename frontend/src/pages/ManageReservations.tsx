@@ -364,7 +364,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 // };
 
 // Main ManageReservations page
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 type SortKey = 'checkIn' | 'guestName' | 'status';
 // const sortOptions = [
 //   { label: 'Check-in Date', value: 'checkIn' },
