@@ -31,25 +31,8 @@ jobs:
       - name: List target directory
         run: ls -la target/
 
-      - name: Create deployment bundle
-        run: |
-          # Create deployment directory
-          mkdir -p deploy
-
-          # Copy JAR file and rename to application.jar
-          cp target/backend-0.0.1-SNAPSHOT.jar deploy/application.jar
-
-          # Create Procfile
-          echo "web: java -jar application.jar" > deploy/Procfile
-
-          # Create ZIP bundle
-          cd deploy
-          zip -r ../backend-deployment.zip .
-          cd ..
-
-          # List contents
-          ls -la
-          unzip -l backend-deployment.zip
+      - name: Rename JAR to application.jar
+        run: cp target/backend-0.0.1-SNAPSHOT.jar application.jar
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -58,12 +41,34 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy to S3
+      - name: Deploy to S3 and Elastic Beanstalk
         run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
           if [ "${{ github.ref_name }}" = "main" ]; then
-            aws s3 cp backend-deployment.zip s3://project2-frontend-group1-397345411365-useast1/backend/backend-deployment-$(date +%Y%m%d-%H%M%S).zip
-            aws s3 cp backend-deployment.zip s3://project2-frontend-group1-397345411365-useast1/backend/backend-deployment.zip
+            S3_BUCKET="s3://project2-frontend-group1-397345411365-useast1"
+            EB_APP_NAME="hotel-reservation-backend"
+            EB_ENV_NAME="hotel-backend-prod-env"
           elif [ "${{ github.ref_name }}" = "dev" ]; then
-            aws s3 cp backend-deployment.zip s3://project2-frontend-group1-dev-397345411365-us-east-1/backend/backend-deployment-$(date +%Y%m%d-%H%M%S).zip
-            aws s3 cp backend-deployment.zip s3://project2-frontend-group1-dev-397345411365-us-east-1/backend/backend-deployment.zip
+            S3_BUCKET="s3://project2-frontend-group1-dev-397345411365-us-east-1"
+            EB_APP_NAME="group1-hotel-dev"
+            EB_ENV_NAME="Group1-hotel-dev-env"
           fi
+
+          # Upload to S3
+          aws s3 cp application.jar ${S3_BUCKET}/backend/application-${TIMESTAMP}.jar
+          aws s3 cp application.jar ${S3_BUCKET}/backend/application.jar
+
+          # Create application version in Elastic Beanstalk
+          aws elasticbeanstalk create-application-version \
+            --application-name ${EB_APP_NAME} \
+            --version-label ${TIMESTAMP} \
+            --source-bundle S3Bucket="${S3_BUCKET#s3://}",S3Key="backend/application-${TIMESTAMP}.jar"
+
+          # Deploy to Elastic Beanstalk
+          aws elasticbeanstalk update-environment \
+            --application-name ${EB_APP_NAME} \
+            --environment-name ${EB_ENV_NAME} \
+            --version-label ${TIMESTAMP}
+
+          echo "Deployed version ${TIMESTAMP} to ${EB_ENV_NAME}"

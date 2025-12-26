@@ -31,7 +31,7 @@ logging:
 
 
 server:
-    port: ${SERVER_PORT:8282}
+    port: ${SERVER_PORT:5000}
     
 
 frontend:
