@@ -17,16 +17,21 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.skillstorm.backend.Services.CustomOAuth2UserService;
+
+// import com.skillstorm.backend.Services.CustomOAuth2UserService;
+
 @Configuration
 public class SecurityConfig {
+    
     
     //Security filter chain configuration
     @Bean
     public SecurityFilterChain securityFilterChain(
+        CustomOAuth2UserService customOAuth2UserService,
         HttpSecurity http,
         @Value("${frontend.url:http://localhost:3000}") String frontendUrl
     ) throws Exception {
-    
         http
             .cors(Customizer.withDefaults())
             
@@ -108,15 +113,30 @@ public class SecurityConfig {
             })
             
             
+
             //Basic AND Oauth both accepted
-            .oauth2Login(Customizer.withDefaults())
-            .httpBasic(Customizer.withDefaults())
-
-
-            //Redirect to frontend home page upon successful login
+            //Oauth2 calls custom oauth2 user service to add user to OUR DB, then redirects to frontend home page
             .oauth2Login(oauth2 -> oauth2
-            .defaultSuccessUrl(frontendUrl + "/home", true));
-            
+                .userInfoEndpoint(userInfo -> userInfo
+                    .oidcUserService(customOAuth2UserService)
+                )
+                //.defaultSuccessUrl(frontendUrl + "/home", true)
+            )
+
+
+
+            //force logout/delete tokens if needed
+            .httpBasic(Customizer.withDefaults())
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(200);
+                    response.getWriter().write("Logged out successfully");
+                })
+            );
+
         return http.build();
     }
 
