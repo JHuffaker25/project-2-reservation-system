@@ -6,7 +6,7 @@ import { login, setUserSessionData } from '@/features/auth/authSlice';
 import Loader from '@/components/loader';
 
 export default function GoogleAuthCallback() {
-  const [fetchUser, { isLoading }] = useLazyGetUserDataQuery();
+  const [fetchUser] = useLazyGetUserDataQuery();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
