@@ -56,6 +56,15 @@ public class ReservationService {
         return reservationRepository.findByUserId(userId);
     }
 
+    //Get reservation by ID
+    public Reservation getReservationById(String id) {
+        Optional<Reservation> reservationOpt = reservationRepository.findById(id);
+        if (reservationOpt.isEmpty()) {
+            throw new IllegalArgumentException("No reservation found with id: " + id);
+        }
+        return reservationOpt.get();
+    }
+
 
 
 //POST METHODS////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,6 +120,9 @@ public class ReservationService {
         reservation.setCheckOut(request.checkOut());
         reservation.setNumGuests(request.numGuests());
         reservation.setTotalPrice(request.totalPrice());
+        reservation.setFirstName(request.firstName());
+        reservation.setLastName(request.lastName());
+        reservation.setRoomNumber(request.roomNumber());
 
         // Convert price to cents for Stripe
         Long amountInCents = request.totalPrice().multiply(BigDecimal.valueOf(100)).longValue();
@@ -377,12 +389,6 @@ public class ReservationService {
             throw new IllegalArgumentException("Reservation not found");
         }
         return reservationOpt.get();
-    }
-
-
-    public Reservation getReservationById(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getReservationById'");
     }
 
 }

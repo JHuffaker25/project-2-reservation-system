@@ -47,6 +47,19 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
+    //Get reservations by reservation by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Reservation> getReservationById(@PathVariable String id) {
+        try {
+            Reservation reservation = reservationService.getReservationById(id);
+            return ResponseEntity.ok(reservation);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().header("Error", "No reservation found with id: " + id).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+        }
+    }
+
 
 
 //POST MAPPINGS////////////////////////////////////////////////////////////////////////////////////////////

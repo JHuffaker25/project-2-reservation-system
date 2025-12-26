@@ -5,7 +5,7 @@ import { X, ChevronDown } from 'lucide-react';
 import { useAppDispatch } from '@/app/hooks';
 import { setRoomTypes } from '@/features/roomType/roomTypeSlice';
 import { useGetRoomTypesQuery } from '@/features/roomType/roomTypeApi';
-import type { RoomType } from '@/features/roomType/roomTypeSlice';
+import type { RoomType } from '@/types/types';
 import Loader from '@/components/loader';
 import { useNavigate } from 'react-router';
 import AmenityIcon from '@/components/amenity-icon';

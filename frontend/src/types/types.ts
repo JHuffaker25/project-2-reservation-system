@@ -52,6 +52,7 @@ export interface Room {
     roomNumber: string;
     typeId: string;
     status: string;
+    datesReserved: string[]; // Array of ISO date strings
 }
 
 export interface Transaction {
@@ -74,4 +75,15 @@ export interface UpdateReservationRequest {
   checkIn: string; // ISO date string
   checkOut: string; // ISO date string
   numGuests: number;
+}
+
+export interface RoomType {
+    id?: string;
+    name: string;
+    description: string;
+    pricePerNight: number;
+    maxGuests: number;
+    amenities: string[];
+    squareFootage: number;
+    images: string[];
 }

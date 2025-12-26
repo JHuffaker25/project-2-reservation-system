@@ -15,9 +15,15 @@ public class Reservation {
     private String userId;
 
     private String roomId;
-    
+
     //PROBABLY ADD THIS IN LATER, REMOVE IF NOT NEEDED
     private String transactionId;
+
+    private String firstName;
+
+    private String lastName;
+
+    private String roomNumber;
 
     private LocalDate checkIn;
 
@@ -34,10 +40,11 @@ public class Reservation {
     // Constructors
     public Reservation() {}
 
-    public Reservation(String userId, String roomId, LocalDate checkIn, 
+    public Reservation(String userId, String roomId, LocalDate checkIn,
                        LocalDate checkOut, Integer numGuests, String status, BigDecimal totalPrice,
-                       String paymentIntentId, String transactionId) {
-        
+                       String paymentIntentId, String transactionId, String firstName,
+                       String lastName, String roomNumber) {
+
         this.userId = userId;
         this.roomId = roomId;
         this.checkIn = checkIn;
@@ -46,6 +53,10 @@ public class Reservation {
         this.status = status;
         this.totalPrice = totalPrice;
         this.paymentIntentId = paymentIntentId;
+        this.transactionId = transactionId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.roomNumber = roomNumber;
     }
 
     // Getters and Setters
@@ -129,5 +140,29 @@ public class Reservation {
         this.transactionId = transactionId;
     }
 
-   
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+
 }
