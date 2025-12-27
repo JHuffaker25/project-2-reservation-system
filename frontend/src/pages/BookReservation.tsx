@@ -13,13 +13,15 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import PaymentForm from '@/features/transaction/components/payment-form';
 import type { CheckoutData } from '@/types/types';
-import { useAppDispatch } from '@/app/hooks';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { setCheckoutData } from '@/features/reservation/reservationSlice';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
 
 function toYMD(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  // Fix timezone offset so date is correct for local usage
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 10);
 }
 
 export default function BookReservation() {
@@ -48,13 +50,18 @@ export default function BookReservation() {
       : skipToken
   );
 
+  // get user info from store
+  const user = useAppSelector(state => state.auth.user);
+
   // handler for Go To Checkout button
   function handleGoToCheckout() {
-    setShowCheckout(true)
+    setShowCheckout(true);
 
     let roomId = '';
+    let roomNumber = '';
     if (availableRooms && availableRooms.length > 0) {
       roomId = availableRooms[0].id;
+      roomNumber = availableRooms[0].roomNumber;
     }
 
     let totalPrice = roomType ? roomType.pricePerNight * Math.max(1, Math.round(((userInput.checkOutDate!.getTime() - userInput.checkInDate!.getTime()) / (1000 * 60 * 60 * 24)))) : 0;
@@ -223,7 +230,11 @@ export default function BookReservation() {
                     </div>
 
                     <Elements stripe={stripePromise}>
-                      <PaymentForm />
+                      <PaymentForm 
+                        firstName={user?.firstName ?? ''}
+                        lastName={user?.lastName ?? ''}
+                        roomNumber={availableRooms && availableRooms.length > 0 ? availableRooms[0].roomNumber : ''}
+                      />
                     </Elements>
                   </div>
                 </div>
