@@ -58,11 +58,6 @@ export default function BookReservation() {
     setShowCheckout(true);
 
     let roomId = '';
-    let roomNumber = '';
-    if (availableRooms && availableRooms.length > 0) {
-      roomId = availableRooms[0].id;
-      roomNumber = availableRooms[0].roomNumber;
-    }
 
     let totalPrice = roomType ? roomType.pricePerNight * Math.max(1, Math.round(((userInput.checkOutDate!.getTime() - userInput.checkInDate!.getTime()) / (1000 * 60 * 60 * 24)))) : 0;
 
