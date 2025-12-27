@@ -63,7 +63,7 @@ export interface Transaction {
   userId: string;
   reservationId: string;
   paymentIntentId: string;
-  transactionStatus: 'CAPTURED' | 'PENDING' | 'FAILED' | 'REFUNDED';
+  transactionStatus: 'CAPTURED' | 'requires_capture' | 'CANCELLED';
   amount: number;
   currency: string;
   authorizedAt: string; // ISO string
