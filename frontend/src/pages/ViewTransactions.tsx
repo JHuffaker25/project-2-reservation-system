@@ -90,6 +90,7 @@ const DateRangePicker = ({
               onClick={() => {
                 setTempStartDate(null);
                 setTempEndDate(null);
+                onApply(null, null); // Also clear the date filtering
               }}
               className="flex-1 cursor-pointer"
             >
@@ -141,13 +142,21 @@ export default function ViewTransactions() {
     return transactions.filter((txn) => {
       const searchLower = searchTerm.toLowerCase();
       const idStr = typeof txn.id === 'string' ? txn.id : '';
-      const intentStr = typeof txn.paymentIntentId === 'string' ? txn.paymentIntentId : '';
+      const guestName = `${txn.firstName ?? ''} ${txn.lastName ?? ''}`.trim();
+      const reservationIdStr = typeof txn.reservationId === 'string' ? txn.reservationId : '';
+      // Use authorizedAt for date search (could also use capturedAt if needed)
+      const dateStr = txn.authorizedAt ? new Date(txn.authorizedAt).toLocaleDateString().toLowerCase() : '';
+
       const matchesSearch =
         idStr.toLowerCase().includes(searchLower) ||
-        intentStr.toLowerCase().includes(searchLower);
+        guestName.toLowerCase().includes(searchLower) ||
+        reservationIdStr.toLowerCase().includes(searchLower) ||
+        dateStr.includes(searchLower);
 
-      // Status filter
-      const matchesStatus = !statusFilter || txn.transactionStatus === statusFilter;
+      // Status filter (case-insensitive, handles undefined/null)
+      const txnStatus = (txn.transactionStatus || '').toString().toLowerCase();
+      const filterStatus = (statusFilter || '').toString().toLowerCase();
+      const matchesStatus = !filterStatus || txnStatus === filterStatus;
 
       // Date range filter (use capturedAt)
       const txnDate = new Date(txn.capturedAt);
@@ -309,7 +318,7 @@ export default function ViewTransactions() {
               <CardTitle>Filters & Search</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Search Bar */}
                 <div className="relative lg:col-span-2">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
