@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import DateRangeCalendar from '@/components/date-range-calendar';
+import ReceiptDialog from '@/components/ReceiptDialog';
 import { Button } from '@/components/ui/button';
 import {
   Calendar,
@@ -60,13 +61,17 @@ const ReservationCard = ({
   const nights = Math.ceil(
     (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
   );
+  // Use the same logic as the list: set check-in to 3:00 PM and today to 00:00
+  const checkInForCompare = new Date(checkInDate);
+  checkInForCompare.setHours(15, 0, 0, 0);
   const today = new Date();
-  const isUpcoming = checkInDate > today;
+  today.setHours(0, 0, 0, 0);
+  const isUpcoming = checkInForCompare > today;
 
   const { data: roomType, isLoading } = useGetRoomTypeByReservationIdQuery(reservation.id ?? '');
   // Fetch transaction data for this reservation
   const { data: transaction, isLoading: isTransactionLoading } = useGetReservationTransactionQuery(reservation.id ?? '');
-  
+
   if (isLoading || isPreloading || isTransactionLoading) return <Loader />;
   return (
     <>
@@ -149,94 +154,16 @@ const ReservationCard = ({
           </div>
         </CardContent>
       </Card>
-      {/* Receipt Dialog */}
-      <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-        <DialogContent className="flex flex-col items-center bg-transparent shadow-none border-none text-force-dark">
-          <div className="bg-white w-full max-w-xs shadow-lg border border-dashed border-gray-300 px-6 py-6 font-mono relative overflow-hidden receipt-paper">
-            <div className="absolute left-0 right-0 top-0 flex justify-between -mt-3">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="w-2 h-2 bg-white rounded-full border border-gray-300" />
-              ))}
-            </div>
-            <div className="absolute left-0 right-0 bottom-0 flex justify-between -mb-3">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="w-2 h-2 bg-white rounded-full border border-gray-300" />
-              ))}
-            </div>
-            <div className="text-center mb-2">
-              <span className="block text-lg font-bold tracking-widest mb-1">HOTEL RECEIPT</span>
-              
-            </div>
-            <div className="border-b border-dashed border-gray-300 mb-2" />
-            <div className="flex justify-between mb-1">
-              <span>Room Type</span>
-              <span>{roomType?.name || 'Deluxe Suite'}</span>
-            </div>
-            <div className="flex justify-between mb-1">
-              <span>Check-in</span>
-              <span>{checkInDateStr}</span>
-            </div>
-            <div className="flex justify-between mb-1">
-              <span>Check-out</span>
-              <span>{checkOutDateStr}</span>
-            </div>
-            <div className="flex justify-between mb-1">
-              <span>Guests</span>
-              <span>{reservation.numGuests}</span>
-            </div>
-            <div className="flex justify-between mb-1">
-              <span>Nights</span>
-              <span>{nights}</span>
-            </div>
-            <div className="flex justify-between mb-1">
-              <span>Price/Night</span>
-              <span>${roomType?.pricePerNight ?? 120}.00</span>
-            </div>
-            <div className="border-b border-dashed border-gray-300 my-2" />
-            <div className="flex justify-between font-bold text-base mb-1">
-              <span>Total Paid</span>
-              <span>
-                ${reservation.totalPrice}.00
-              </span>
-            </div>
-            <div className="flex justify-between mb-1">
-              <span>Payment</span>
-              <span>
-                {transaction?.paymentIntentId
-                  ? `Card •••• ${transaction?.last4 ?? 'XXXX'}`
-                  : 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between mb-1">
-              <span>Date Paid</span>
-              <span>
-                {transaction?.capturedAt
-                  ? new Date(transaction.capturedAt).toLocaleDateString()
-                  : checkInDateStr}
-              </span>
-            </div>
-            
-            <div className="border-b border-dashed border-gray-300 my-2" />
-            <div className="flex flex-col gap-1 mb-1">
-                <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                  <span className="font-mono text-gray-400">Reservation ID:</span>
-                  <span className="font-mono py-0.5 rounded">{reservation.id}</span>
-                </div>
-                {transaction?.id && (
-                  <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                    <span className="font-mono text-gray-400">Transaction ID:</span>
-                    <span className="font-monopx-2 py-0.5 rounded">{transaction.id}</span>
-                  </div>
-                )}
-              </div>
-              <div className="border-b border-dashed border-gray-300 my-2" />
-            <div className="text-center text-xs text-gray-400 mt-2">Thank you for your stay!</div>
-            <div className="flex justify-center mt-3">
-              <Button onClick={() => setShowReceipt(false)} type="button" className="cursor-pointer">Close</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ReceiptDialog
+        open={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        reservation={reservation}
+        roomType={roomType}
+        transaction={transaction}
+        checkInDateStr={checkInDateStr}
+        checkOutDateStr={checkOutDateStr}
+        nights={nights}
+      />
     </>
   );
 };
@@ -254,11 +181,19 @@ const ModifyReservationDialog = ({
 
   const { data: roomType } = useGetRoomTypeByReservationIdQuery(reservation.id ?? '');
 
+  // Helper: treat YYYY-MM-DD as local date
+  function toLocalDate(dateString: string) {
+    if (!dateString) return null;
+    return new Date(dateString + 'T00:00:00');
+  }
+
   const [modifyData, setModifyData] = useState<UpdateReservationRequest>({
     id: reservation?.id || '',
     checkIn: reservation.checkIn,
     checkOut: reservation.checkOut,
     numGuests: reservation.numGuests || 1,
+    totalPrice: reservation.totalPrice,
+    roomNumber: reservation.roomNumber || '',
   });
 
   return (
@@ -279,24 +214,36 @@ const ModifyReservationDialog = ({
             <h3 className="text-sm font-semibold mb-4">Update Check-in and Check-out Dates</h3>
 
             <DateRangeCalendar
-              startDate={ new Date(modifyData.checkIn)}
-              endDate={new Date(modifyData.checkOut)}
-              onStartDateChange={(date) => setModifyData((prev) => ({ ...prev, checkIn: date ? date.toISOString() : '' }))}
-              onEndDateChange={(date) => setModifyData((prev) => ({ ...prev, checkOut: date ? date.toISOString() : '' }))}
+              startDate={toLocalDate(modifyData.checkIn)}
+              endDate={toLocalDate(modifyData.checkOut)}
+              onStartDateChange={(date) =>
+                setModifyData((prev) => ({ ...prev, checkIn: date ? date.toISOString().slice(0, 10) : '' }))
+              }
+              onEndDateChange={(date) =>
+                setModifyData((prev) => ({ ...prev, checkOut: date ? date.toISOString().slice(0, 10) : '' }))
+              }
               minDate={new Date()}
-              onChange={({ checkInDate, checkOutDate }) => {
-                setModifyData((prev) => ({ ...prev, checkInDate }));
-                setModifyData((prev) => ({ ...prev, checkOutDate }));
-              }}
             />
             <div className="mt-4 pt-6 border-t space-y-2">
               <div className="text-sm">
                 <span className="text-muted-foreground">Check-in: </span>
-                <span className="font-semibold">{modifyData.checkIn ? new Date(modifyData.checkIn).toLocaleDateString() : 'Not selected'}</span>
+                <span className="font-semibold">
+                  {modifyData.checkIn
+                    ? (toLocalDate(modifyData.checkIn)
+                      ? toLocalDate(modifyData.checkIn)!.toLocaleDateString()
+                      : 'Not selected')
+                    : 'Not selected'}
+                </span>
               </div>
               <div className="text-sm">
                 <span className="text-muted-foreground">Check-out: </span>
-                <span className="font-semibold">{modifyData.checkOut ? new Date(modifyData.checkOut).toLocaleDateString() : 'Not selected'}</span>
+                <span className="font-semibold">
+                  {modifyData.checkOut
+                    ? (toLocalDate(modifyData.checkOut)
+                      ? toLocalDate(modifyData.checkOut)!.toLocaleDateString()
+                      : 'Not selected')
+                    : 'Not selected'}
+                </span>
               </div>
             </div>
           </div>
@@ -334,7 +281,10 @@ const ModifyReservationDialog = ({
                 {(() => {
                   if (!modifyData.checkIn || !modifyData.checkOut || roomType?.pricePerNight == null) return '-';
                   const msPerDay = 1000 * 60 * 60 * 24;
-                  const nights = Math.max(1, Math.round((new Date(modifyData.checkOut).getTime() - new Date(modifyData.checkIn).getTime()) / msPerDay));
+                  const checkInDate = toLocalDate(modifyData.checkIn);
+                  const checkOutDate = toLocalDate(modifyData.checkOut);
+                  if (!checkInDate || !checkOutDate) return '-';
+                  const nights = Math.max(1, Math.round((checkOutDate.getTime() - checkInDate.getTime()) / msPerDay));
                   return `$${(roomType.pricePerNight * nights).toLocaleString()}`;
                 })()}
               </span>
@@ -345,13 +295,18 @@ const ModifyReservationDialog = ({
             <Button
               onClick={() => {
                 if (modifyData.checkIn && modifyData.checkOut) {
-                  onConfirm({
-                    id: modifyData.id,
-                    checkInDate: new Date(modifyData.checkIn),
-                    checkOutDate: new Date(modifyData.checkOut),
-                    roomType: roomType ?? null,
-                    guests: modifyData.numGuests,
-                  });
+                  // Convert YYYY-MM-DD to local Date at midnight
+                  const checkInDate = toLocalDate(modifyData.checkIn);
+                  const checkOutDate = toLocalDate(modifyData.checkOut);
+                  if (checkInDate && checkOutDate) {
+                    onConfirm({
+                      id: modifyData.id,
+                      checkInDate,
+                      checkOutDate,
+                      roomType: roomType ?? null,
+                      guests: modifyData.numGuests,
+                    });
+                  }
                 }
               }}
               disabled={!modifyData.checkIn || !modifyData.checkOut}
@@ -367,6 +322,12 @@ const ModifyReservationDialog = ({
 };
 
 export default function Reservations() {
+  // Loader overlay for update
+  const loaderOverlay = (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <Loader />
+    </div>
+  );
 
   const userId = useAppSelector((state) => state.auth.user?.id);
 
@@ -375,13 +336,13 @@ export default function Reservations() {
     isLoading,
     refetch: refetchReservations
   } = useGetUserReservationsQuery(userId ?? '', { refetchOnMountOrArgChange: true });
-    const dispatch = useAppDispatch();
-  
-    useEffect(() => {
-      if (reservations) {
-        dispatch(setUserReservations(reservations));
-      }
-    }, [reservations]);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (reservations) {
+      dispatch(setUserReservations(reservations));
+    }
+  }, [reservations]);
 
   const [cancelDialogId, setCancelDialogId] = useState<string | null>(null);
   const [modifyDialogId, setModifyDialogId] = useState<string | null>(null);
@@ -463,6 +424,7 @@ export default function Reservations() {
 
   return (
     <div className="min-h-screen bg-background">
+      {isUpdating && loaderOverlay}
 
       <div className="py-12 px-4 md:px-6 lg:px-8 border-b">
         <div className="max-w-7xl mx-auto">
@@ -490,8 +452,8 @@ export default function Reservations() {
                   <ReservationCard
                     key={reservation.id}
                     reservation={reservation}
-                    onCancel={() => {}}
-                    onModify={() => {}}
+                    onCancel={() => { }}
+                    onModify={() => { }}
                     isPreloading={isLoading}
                   />
                 ))}
@@ -549,8 +511,8 @@ export default function Reservations() {
                   <ReservationCard
                     key={reservation.id}
                     reservation={reservation}
-                    onCancel={() => {}}
-                    onModify={() => {}}
+                    onCancel={() => { }}
+                    onModify={() => { }}
                   />
                 ))}
               </div>
@@ -592,6 +554,8 @@ export default function Reservations() {
               checkIn: modifyData.checkInDate.toISOString(),
               checkOut: modifyData.checkOutDate.toISOString(),
               numGuests: modifyData.guests,
+              totalPrice: reservations.find((r) => r.id === modifyData.id)?.totalPrice || 0,
+              roomNumber: reservations.find((r) => r.id === modifyData.id)?.roomNumber || '',
             })
           }
         />
