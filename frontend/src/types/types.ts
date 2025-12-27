@@ -17,18 +17,21 @@ export interface Reservation {
   totalPrice: number;
   paymentMethodId?: string;
   status?: string;
+  roomNumber?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface PaymentMethod {
-    paymentMethodId: string;
-    customerId: string;
-    type: string;
-    card: {
-      last4: string;
-      expMonth: number;
-      expYear: number;
-      brand: string;
-    };
+  paymentMethodId: string;
+  customerId: string;
+  type: string;
+  card: {
+    last4: string;
+    expMonth: number;
+    expYear: number;
+    brand: string;
+  };
 }
 
 export interface Preferences {
@@ -48,11 +51,11 @@ export interface User {
 }
 
 export interface Room {
-    id: string;
-    roomNumber: string;
-    typeId: string;
-    status: string;
-    datesReserved: string[]; // Array of ISO date strings
+  id: string;
+  roomNumber: string;
+  typeId: string;
+  status: string;
+  datesReserved: string[]; // Array of ISO date strings
 }
 
 export interface Transaction {
@@ -68,6 +71,8 @@ export interface Transaction {
   cancelledAt: string; // ISO string
   transactionId?: string;
   last4?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface UpdateReservationRequest {
@@ -75,15 +80,17 @@ export interface UpdateReservationRequest {
   checkIn: string; // ISO date string
   checkOut: string; // ISO date string
   numGuests: number;
+  totalPrice: number;
+  roomNumber: string;
 }
 
 export interface RoomType {
-    id?: string;
-    name: string;
-    description: string;
-    pricePerNight: number;
-    maxGuests: number;
-    amenities: string[];
-    squareFootage: number;
-    images: string[];
+  id?: string;
+  name: string;
+  description: string;
+  pricePerNight: number;
+  maxGuests: number;
+  amenities: string[];
+  squareFootage: number;
+  images: string[];
 }

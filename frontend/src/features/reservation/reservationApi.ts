@@ -33,7 +33,7 @@ export const reservationApi = baseApi.injectEndpoints({
         }),
         transformResponse: (response: UpdateReservationRequest) => response,
     }),
-    cancelReservation: builder.mutation<{ message: string }, string>({
+    deleteReservation: builder.mutation<{ message: string }, string>({
       query: (reservationId) => ({
         url: `/reservations/delete/${reservationId}`,
         method: 'DELETE',
@@ -47,8 +47,37 @@ export const reservationApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: any) => response,
     }),
+    getReservationById: builder.query<Reservation, string>({
+      query: (reservationId) => ({
+        url: `/reservations/${reservationId}`,
+        method: 'GET',
+      }),
+      transformResponse: (response: Reservation) => response,
+    }),
+    checkInReservation: builder.mutation<{ message: string }, string>({
+        query: (reservationId) => ({
+            url: `/reservations/${reservationId}/check-in`,
+            method: 'PUT',
+        }),
+        transformResponse: (response: { message: string }) => response,
+    }),
+    checkOutReservation: builder.mutation<{ message: string }, string>({
+        query: (reservationId) => ({
+            url: `/reservations/${reservationId}/check-out`,
+            method: 'PUT',
+        }),
+        transformResponse: (response: { message: string }) => response,
+    }),
+    cancelReservation: builder.mutation<{ message: string }, string>({
+        query: (reservationId) => ({
+            url: `/reservations/${reservationId}/cancel`,
+            method: 'PUT',
+        }),
+        transformResponse: (response: { message: string }) => response,
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetReservationsQuery, useGetUserReservationsQuery, useCreateReservationMutation, useUpdateReservationMutation, useCancelReservationMutation, useGetReservationTransactionQuery } = reservationApi;
+export const { useGetReservationsQuery, useGetUserReservationsQuery, useCreateReservationMutation, useUpdateReservationMutation, useCancelReservationMutation, 
+    useGetReservationTransactionQuery, useGetReservationByIdQuery, useCheckInReservationMutation, useCheckOutReservationMutation, useDeleteReservationMutation } = reservationApi;
