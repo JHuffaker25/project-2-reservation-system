@@ -11,20 +11,23 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Download,
-  Eye,
   Search,
   DollarSign,
   Clock,
   RotateCcw,
   X,
   Calendar,
+  Receipt,
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
+import ReceiptDialog from '@/components/ReceiptDialog';
 
 
 import { useGetTransactionsQuery } from '@/features/transaction/transactionApi';
-import type { Transaction } from '@/types/types';
+import { useGetRoomTypeByReservationIdQuery } from '@/features/roomType/roomTypeApi';
+import { useGetReservationByIdQuery } from '@/features/reservation/reservationApi';
+import { useGetReservationTransactionQuery } from '@/features/reservation/reservationApi';
+
 // Badge component for status (updated for new model)
 const StatusBadge = ({ status }: { status: string }) => {
   const statusConfig = {
@@ -109,99 +112,29 @@ const DateRangePicker = ({
   );
 };
 
-// Transaction Details Sheet (updated for new model)
-const TransactionDetailsSheet = ({
-  transaction,
-  onClose,
-}: {
-  transaction: Transaction | null;
-  onClose: () => void;
-}) => {
-  if (!transaction) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex">
-      <div className="ml-auto bg-muted w-full max-w-md h-full shadow-lg overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-muted border-b p-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold">Transaction Details</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="cursor-pointer"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Transaction ID */}
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Transaction ID</p>
-            <p className="font-mono text-sm font-semibold">{transaction.id}</p>
-          </div>
-
-          {/* Payment Info */}
-          <div className="border-t pt-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Payment Information</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Payment Intent ID:</span>
-                <span className="font-semibold">{transaction.paymentIntentId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Status:</span>
-                <StatusBadge status={transaction.transactionStatus} />
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount:</span>
-                <span className="font-semibold">{transaction.currency} ${transaction.amount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Authorized At:</span>
-                <span className="font-semibold">{new Date(transaction.authorizedAt).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Captured At:</span>
-                <span className="font-semibold">{new Date(transaction.capturedAt).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="border-t pt-4 space-y-2">
-            <Button className="w-full gap-2 cursor-pointer" variant="outline">
-              <Download className="h-4 w-4" />
-              Download Receipt
-            </Button>
-            {transaction.transactionStatus === 'CAPTURED' && (
-              <Button className="w-full gap-2 cursor-pointer" variant="destructive">
-                <RotateCcw className="h-4 w-4" />
-                Issue Refund
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 
 export default function ViewTransactions() {
   const { data: transactions = [], isLoading, error } = useGetTransactionsQuery();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-//   const [methodFilter, setMethodFilter] = useState('');
   const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
     start: null,
     end: null,
   });
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedReservationId, setSelectedReservationId] = useState<string | null>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [showReservationDetails, setShowReservationDetails] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  // Sorting state
+  const [sort, setSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'authorizedAt', direction: 'desc' });
+
+  // Fetch reservation, roomType, and transaction for selected reservationId
+  const { data: selectedReservation } = useGetReservationByIdQuery(selectedReservationId ?? '', { skip: !selectedReservationId });
+  const { data: selectedRoomType } = useGetRoomTypeByReservationIdQuery(selectedReservationId ?? '', { skip: !selectedReservationId });
+  const { data: selectedTransaction } = useGetReservationTransactionQuery(selectedReservationId ?? '', { skip: !selectedReservationId });
 
   // Filter transactions (updated for new model)
   const filteredTransactions = useMemo(() => {
@@ -227,12 +160,65 @@ export default function ViewTransactions() {
     });
   }, [transactions, searchTerm, statusFilter, dateRange]);
 
+  // Sorting logic (similar to RoomTable)
+  const sortedTransactions = useMemo(() => {
+    const sorted = [...filteredTransactions];
+    sorted.sort((a, b) => {
+      let aVal: any, bVal: any;
+      switch (sort.key) {
+        case 'id':
+          aVal = a.id;
+          bVal = b.id;
+          break;
+        case 'guest':
+          aVal = `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim().toLowerCase();
+          bVal = `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim().toLowerCase();
+          break;
+        case 'reservationId':
+          aVal = a.reservationId;
+          bVal = b.reservationId;
+          break;
+        case 'amount':
+          aVal = a.amount;
+          bVal = b.amount;
+          break;
+        case 'status':
+          aVal = a.transactionStatus;
+          bVal = b.transactionStatus;
+          break;
+        case 'authorizedAt':
+          aVal = new Date(a.authorizedAt).getTime();
+          bVal = new Date(b.authorizedAt).getTime();
+          break;
+        default:
+          aVal = '';
+          bVal = '';
+      }
+      if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [filteredTransactions, sort]);
+
   // Pagination
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
-  const paginatedTransactions = filteredTransactions.slice(
+  const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage);
+  const paginatedTransactions = sortedTransactions.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Chevron for sort direction
+  const getChevron = (key: string) => {
+    if (sort.key !== key) return <ChevronDown className="inline h-4 w-4 text-muted-foreground opacity-50" />;
+    return sort.direction === 'asc' ? <ChevronDown className="inline h-4 w-4 text-muted-foreground rotate-180" /> : <ChevronDown className="inline h-4 w-4 text-muted-foreground" />;
+  };
+
+  // Handle sort change
+  const handleSort = (key: string) => {
+    setSort(prev => prev.key === key ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' });
+    setCurrentPage(1);
+  };
 
   // Analytics calculations (updated for new model)
   const analytics = useMemo(() => {
@@ -279,7 +265,7 @@ export default function ViewTransactions() {
                 <DollarSign className="h-5 w-5 text-green-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${analytics.totalRevenue.toFixed(2)}</div>
+                <div className="text-2xl font-bold">${(analytics.totalRevenue / 100).toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   From {transactions.filter((t) => t.transactionStatus === 'CAPTURED').length} captured transactions
                 </p>
@@ -293,7 +279,7 @@ export default function ViewTransactions() {
                 <Clock className="h-5 w-5 text-yellow-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${analytics.pendingPayments.toFixed(2)}</div>
+                <div className="text-2xl font-bold">${(analytics.pendingPayments / 100).toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   From {transactions.filter((t) => t.transactionStatus === 'PENDING').length} transactions
                 </p>
@@ -307,7 +293,7 @@ export default function ViewTransactions() {
                 <RotateCcw className="h-5 w-5 text-blue-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${analytics.totalRefunds.toFixed(2)}</div>
+                <div className="text-2xl font-bold">${(analytics.totalRefunds / 100).toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   From {transactions.filter((t) => t.transactionStatus === 'REFUNDED').length} refunded transactions
                 </p>
@@ -388,13 +374,25 @@ export default function ViewTransactions() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Transaction ID</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Guest</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Reservation ID</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Amount</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Method</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Status</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Date</TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('id')}>
+                        Transaction ID {getChevron('id')}
+                      </TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('guest')}>
+                        Guest {getChevron('guest')}
+                      </TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('reservationId')}>
+                        Reservation ID {getChevron('reservationId')}
+                      </TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('amount')}>
+                        Amount {getChevron('amount')}
+                      </TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Payment Method</TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('status')}>
+                        Status {getChevron('status')}
+                      </TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('authorizedAt')}>
+                        Date {getChevron('authorizedAt')}
+                      </TableCell>
                       <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Actions</TableCell>
                     </TableRow>
                   </TableHeader>
@@ -402,21 +400,39 @@ export default function ViewTransactions() {
                     {paginatedTransactions.map((txn) => (
                       <TableRow key={txn.id} className="hover:bg-muted/50">
                         <TableCell className="py-3 font-semibold">{txn.id}</TableCell>
-                        <TableCell className="py-3">N/A</TableCell>
-                        <TableCell className="py-3 text-muted-foreground">N/A</TableCell>
-                        <TableCell className="py-3 font-semibold">{txn.currency} ${txn.amount.toFixed(2)}</TableCell>
-                        <TableCell className="py-3 text-muted-foreground">N/A</TableCell>
+                        <TableCell className="py-3">{txn.firstName} {txn.lastName}</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">{txn.reservationId}</TableCell>
+                        <TableCell className="py-3 font-semibold">{txn.currency.toUpperCase()} ${(txn.amount / 100).toFixed(2)}</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">{"**** **** **** " + (txn.last4 ?? "XXXX")}</TableCell>
                         <TableCell className="py-3"><StatusBadge status={txn.transactionStatus} /></TableCell>
-                        <TableCell className="py-3 text-muted-foreground">{new Date(txn.capturedAt).toLocaleDateString()}</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">{new Date(txn.authorizedAt).toLocaleDateString()}</TableCell>
                         <TableCell className="py-3">
                           <div className="flex gap-2">
+                            {/* Receipt button */}
                             <Button
                               size="sm"
-                              variant="ghost"
-                              onClick={() => setSelectedTransaction(txn)}
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedReservationId(txn.reservationId);
+                                setShowReceipt(true);
+                              }}
                               className="gap-1 cursor-pointer"
+                              title="View Receipt"
                             >
-                              <Eye className="h-4 w-4" />
+                              <Receipt className="h-4 w-4" />
+                            </Button>
+                            {/* View Reservation Details button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedReservationId(txn.reservationId);
+                                setShowReservationDetails(true);
+                              }}
+                              className="gap-1 cursor-pointer"
+                              title="View Reservation Details"
+                            >
+                              <Search className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
@@ -460,12 +476,117 @@ export default function ViewTransactions() {
         </div>
       </div>
 
-      {/* Transaction Details Sheet */}
-      {selectedTransaction && (
-        <TransactionDetailsSheet
-          transaction={selectedTransaction}
-          onClose={() => setSelectedTransaction(null)}
+      {/* Receipt Dialog for selected reservation */}
+      {selectedReservation && showReceipt && (
+        <ReceiptDialog
+          open={showReceipt}
+          onClose={() => setShowReceipt(false)}
+          reservation={selectedReservation}
+          roomType={selectedRoomType ?? null}
+          transaction={selectedTransaction ?? null}
+          checkInDateStr={selectedReservation.checkIn ? new Date(selectedReservation.checkIn).toLocaleDateString() : 'placeholder'}
+          checkOutDateStr={selectedReservation.checkOut ? new Date(selectedReservation.checkOut).toLocaleDateString() : 'placeholder'}
+          nights={selectedReservation.checkIn && selectedReservation.checkOut ? Math.max(1, Math.round((new Date(selectedReservation.checkOut).getTime() - new Date(selectedReservation.checkIn).getTime()) / (1000 * 60 * 60 * 24))) : 1}
         />
+      )}
+
+      {/* Reservation Details Sidebar */}
+      {selectedReservation && showReservationDetails && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Overlay */}
+          <div
+            className="flex-1 bg-black/20"
+            onClick={() => setShowReservationDetails(false)}
+            style={{ cursor: 'pointer' }}
+          />
+          {/* Sidebar */}
+          <aside className="w-full max-w-md h-full bg-white shadow-2xl animate-slide-in-right relative flex flex-col">
+            <button
+              className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 z-10 transition-colors duration-150"
+              onClick={() => setShowReservationDetails(false)}
+              title="Close"
+            >
+              <X className="h-7 w-7" />
+            </button>
+            <div className="p-10 pt-16 flex-1 flex flex-col overflow-y-auto">
+              <h2 className="text-3xl font-black mb-8 text-primary tracking-tight">Reservation Details</h2>
+              <div className="space-y-8">
+                {/* IDs and Status */}
+                <div className="flex flex-col gap-3 pb-2 border-b border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold text-gray-500">Res ID:</span>
+                    <span className="font-bold text-primary select-all">{selectedReservation.id}</span>
+                  </div>
+                  {selectedReservation.userId && (
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-gray-500">User ID:</span>
+                      <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded select-all">{selectedReservation.userId}</span>
+                    </div>
+                  )}
+                  {selectedReservation.roomId && (
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-gray-500">Room ID:</span>
+                      <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded select-all">{selectedReservation.roomId}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold text-gray-500">Status:</span>
+                    <span className="px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wide">{selectedReservation.status}</span>
+                  </div>
+                </div>
+
+                {/* Guest Info */}
+                <div className="bg-gray-50 rounded-xl p-5 shadow-sm">
+                  <h3 className="text-lg font-bold mb-3 text-gray-700 tracking-tight">Guest Information</h3>
+                  <div className="flex flex-col gap-2 text-gray-700">
+                    <span><span className="font-semibold">Name:</span> {selectedReservation.firstName} {selectedReservation.lastName}</span>
+                    {/* {selectedReservation.email && <span><span className="font-semibold">Email:</span> {selectedReservation.email}</span>}
+                    {selectedReservation.phone && <span><span className="font-semibold">Phone:</span> {selectedReservation.phone}</span>} */}
+                  </div>
+                </div>
+
+                {/* Dates & Room */}
+                <div className="bg-gray-50 rounded-xl p-5 shadow-sm">
+                  <h3 className="text-lg font-bold mb-3 text-gray-700 tracking-tight">Stay Details</h3>
+                  <div className="flex flex-col gap-2 text-gray-700">
+                    <span><span className="font-semibold">Check-in:</span> {selectedReservation.checkIn ? new Date(selectedReservation.checkIn).toLocaleDateString() : 'N/A'}</span>
+                    <span><span className="font-semibold">Check-out:</span> {selectedReservation.checkOut ? new Date(selectedReservation.checkOut).toLocaleDateString() : 'N/A'}</span>
+                    {selectedRoomType && <span><span className="font-semibold">Room Type:</span> {selectedRoomType.name}</span>}
+                  </div>
+                </div>
+
+                {/* Other fields */}
+                <div className="bg-gray-50 rounded-xl p-5 shadow-sm">
+                  <h3 className="text-lg font-bold mb-3 text-gray-700 tracking-tight">Other Information</h3>
+                  <div className="flex flex-col gap-2 text-gray-700">
+                    {Object.entries(selectedReservation)
+                      .filter(([key]) => !['id','userId','roomId','status','firstName','lastName','email','phone','checkIn','checkOut'].includes(key))
+                      .map(([key, value]) => {
+                        // Convert camelCase to Title Case
+                        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        // Format currency fields
+                        if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('price') || key.toLowerCase().includes('total')) {
+                          let currency = 'USD';
+                          let formatted = typeof value === 'number' ? `${currency.toUpperCase()} $${(value / 100).toFixed(2)}` : String(value);
+                          return (
+                            <span key={key}><span className="font-semibold">{label}:</span> <span className="font-mono text-green-700">{formatted}</span></span>
+                          );
+                        }
+                        return (
+                          <span key={key}><span className="font-semibold">{label}:</span> {typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)}</span>
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-10 flex flex-col gap-2">
+                <Button variant="outline" className="font-semibold py-3 text-base" onClick={() => setShowReservationDetails(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </aside>
+        </div>
       )}
     </div>
   );
