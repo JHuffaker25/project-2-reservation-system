@@ -44,8 +44,9 @@ public class SecurityConfig {
     ) throws Exception {
         http
             .cors(Customizer.withDefaults())
-            
-            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())) //Allow JS to read CSRF token cookie
+
+            // Temporarily disable CSRF completely to test
+            .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(authorize -> {
                 authorize
@@ -162,6 +163,7 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("X-CSRF-TOKEN", "X-XSRF-TOKEN"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
