@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import React from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import Loader from '@/components/loader';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,13 @@ import { useCreateReservationMutation } from '@/features/reservation/reservation
 import type { PaymentMethod } from '@/types/types';
 import { useNavigate } from 'react-router';
 
-export default function PaymentForm() {
+interface PaymentFormProps {
+  firstName: string;
+  lastName: string;
+  roomNumber: string;
+}
+
+export default function PaymentForm({ firstName, lastName, roomNumber }: PaymentFormProps) {
     
   const navigate = useNavigate();
   
@@ -75,6 +82,9 @@ export default function PaymentForm() {
         numGuests: checkoutData.numGuests,
         totalPrice: checkoutData.totalPrice,
         paymentMethodId: selectedMethod?.paymentMethodId,
+        firstName,
+        lastName,
+        roomNumber,
       };
     
       try {
@@ -112,6 +122,27 @@ export default function PaymentForm() {
       setSelectedMethod(newMethod);
       setShowAddNew(false);
       setIsRefreshingMethod(false);
+      // After attaching, book reservation with new payment method
+      if (newMethod) {
+        const reservation = {
+          userId: userId,
+          roomId: checkoutData.roomId,
+          checkIn: checkoutData.checkIn,
+          checkOut: checkoutData.checkOut,
+          numGuests: checkoutData.numGuests,
+          totalPrice: checkoutData.totalPrice,
+          paymentMethodId: newMethod.paymentMethodId,
+          firstName,
+          lastName,
+          roomNumber,
+        };
+        try {
+          await createReservation(reservation).unwrap();
+          navigate('/reservations');
+        } catch (err) {
+          console.error('Failed to create reservation:', err);
+        }
+      }
     } catch (err) {
       setIsRefreshingMethod(false);
       return;
