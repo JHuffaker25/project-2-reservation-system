@@ -18,6 +18,7 @@ import {
   X,
   Calendar,
   Receipt,
+  Download,
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import ReceiptDialog from '@/components/ReceiptDialog';
@@ -30,13 +31,14 @@ import { useGetReservationTransactionQuery } from '@/features/reservation/reserv
 
 // Badge component for status (updated for new model)
 const StatusBadge = ({ status }: { status: string }) => {
-  const statusConfig = {
-    CAPTURED: { bg: 'bg-green-100', text: 'text-green-800', label: 'Captured' },
-    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
-    FAILED: { bg: 'bg-red-100', text: 'text-red-800', label: 'Failed' },
-    REFUNDED: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Refunded' },
+  // Normalize status to uppercase for consistent lookup
+  const normalizedStatus = (status || '').toUpperCase();
+  const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
+    CAPTURED: { bg: 'bg-green-100', text: 'text-green-800', label: 'CAPTURED' },
+    REQUIRES_CAPTURE: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'PENDING' },
+    CANCELLED: { bg: 'bg-red-100', text: 'text-red-800', label: 'CANCELLED' },
   };
-  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.PENDING;
+  const config = statusConfig[normalizedStatus] || statusConfig.REQUIRES_CAPTURE;
   return (
     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}`}>
       {config.label}
@@ -117,6 +119,8 @@ const DateRangePicker = ({
 
 
 export default function ViewTransactions() {
+  // Debug: log all transactions
+  // eslint-disable-next-line no-console
   const { data: transactions = [], isLoading, error } = useGetTransactionsQuery();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -229,26 +233,120 @@ export default function ViewTransactions() {
     setCurrentPage(1);
   };
 
-  // Analytics calculations (updated for new model)
+  // Analytics calculations (monthly revenue, pending, refunds)
   const analytics = useMemo(() => {
-    const captured = transactions.filter((t) => t.transactionStatus === 'CAPTURED');
-    const pending = transactions.filter((t) => t.transactionStatus === 'PENDING');
-    const refunded = transactions.filter((t) => t.transactionStatus === 'REFUNDED');
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
 
-    const totalRevenue = captured.reduce((sum, t) => sum + t.amount, 0);
-    const pendingPayments = pending.reduce((sum, t) => sum + t.amount, 0);
-    const totalRefunds = refunded.reduce((sum, t) => sum + t.amount, 0);
+    // Only include captured transactions from the current month
+    const captured = transactions.filter((t) => {
+      if (t.transactionStatus !== 'CAPTURED') return false;
+      const date = t.capturedAt ? new Date(t.capturedAt) : null;
+      return (
+        date &&
+        date.getMonth() === currentMonth &&
+        date.getFullYear() === currentYear
+      );
+    });
+
+
+
+    // Normalize status to uppercase for comparison
+    const pending = transactions.filter((t) => {
+      const status = (t.transactionStatus || '').toUpperCase();
+      return status === 'REQUIRES_CAPTURE';
+    });
+    const cancelled = transactions.filter((t) => (t.transactionStatus || '').toUpperCase() === 'CANCELLED');
+
+    // Ensure we use the correct amount field for pending transactions
+    const getAmount = (txn: any) => typeof txn.amount === 'number' ? txn.amount : 0;
+
+    const totalRevenue = captured.reduce((sum, t) => sum + getAmount(t), 0);
+    const pendingPayments = pending.reduce((sum, t) => sum + getAmount(t), 0);
+    const totalCancelled = cancelled.reduce((sum, t) => sum + getAmount(t), 0);
+
+    // Month label (e.g., December 2025)
+    const monthLabel = now.toLocaleString('default', { month: 'long', year: 'numeric' });
 
     return {
       totalRevenue,
       pendingPayments,
-      totalRefunds,
+      totalRefunds: totalCancelled,
       totalTransactions: transactions.length,
+      monthLabel,
+      capturedCount: captured.length,
     };
   }, [transactions]);
 
   if (isLoading) return <div className="p-8">Loading transactions...</div>;
   if (error) return <div className="p-8 text-red-600">Failed to load transactions.</div>;
+console.log('All transactions:', transactions);
+const totalAmount = transactions.reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : 0), 0);
+console.log('Sum of all transaction amounts:', totalAmount);
+
+ function generateCSV() {
+    // Business/accounting-friendly CSV export
+    const headers = [
+      'Transaction ID',
+      'Guest Name',
+      'Reservation ID',
+      'Transaction Type',
+      'Status',
+      'Amount (USD)',
+      'Currency',
+      'Payment Method Last4',
+      'Authorized At (ISO)',
+      'Captured At (ISO)',
+      'Cancelled At (ISO)',
+      'Notes'
+    ];
+    // Use sortedTransactions for business reporting (filtered and sorted)
+    const rows = sortedTransactions.map((txn) => {
+      // Transaction type: Payment, Refund, Pending, etc.
+      let type = 'Payment';
+      if ((txn.transactionStatus || '').toUpperCase() === 'CANCELLED') type = 'Refund';
+      else if ((txn.transactionStatus || '').toUpperCase() === 'REQUIRES_CAPTURE') type = 'Pending';
+      // Notes for accounting (e.g., failed, partial, etc.)
+      let notes = '';
+      if ((txn.transactionStatus || '').toUpperCase() === 'REQUIRES_CAPTURE') notes = 'Pending capture';
+      if ((txn.transactionStatus || '').toUpperCase() === 'CANCELLED') notes = 'Refunded/cancelled';
+      if ((txn.transactionStatus || '').toUpperCase() === 'FAILED') notes = 'Failed';
+      return [
+        txn.id,
+        `${txn.firstName ?? ''} ${txn.lastName ?? ''}`.trim(),
+        txn.reservationId,
+        type,
+        (txn.transactionStatus || '').toString().toUpperCase(),
+        typeof txn.amount === 'number' ? (txn.amount / 100).toFixed(2) : '0.00',
+        txn.currency ? txn.currency.toUpperCase() : '',
+        txn.last4 ? `**** **** **** ${txn.last4}` : 'N/A',
+        txn.authorizedAt ? new Date(txn.authorizedAt).toISOString() : '',
+        txn.capturedAt ? new Date(txn.capturedAt).toISOString() : '',
+        txn.cancelledAt ? new Date(txn.cancelledAt).toISOString() : '',
+        notes
+      ];
+    });
+
+    // Add summary row for totals (for accounting)
+    const total = sortedTransactions.reduce((sum, txn) => sum + (typeof txn.amount === 'number' ? txn.amount : 0), 0);
+    const summaryRow = [
+      '', '', '', 'TOTAL', '', (total / 100).toFixed(2), 'USD', '', '', '', '', ''
+    ];
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((r) => r.join(',')), summaryRow.join(',')].join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `transactions_report_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link); // Required for FF
+
+    link.click();
+    document.body.removeChild(link);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -270,13 +368,16 @@ export default function ViewTransactions() {
             {/* Revenue */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Monthly Revenue
+                  <span className="ml-2 text-xs text-muted-foreground font-normal">({analytics.monthLabel})</span>
+                </CardTitle>
                 <DollarSign className="h-5 w-5 text-green-600" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${(analytics.totalRevenue / 100).toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  From {transactions.filter((t) => t.transactionStatus === 'CAPTURED').length} captured transactions
+                  From {analytics.capturedCount} captured transactions
                 </p>
               </CardContent>
             </Card>
@@ -290,21 +391,21 @@ export default function ViewTransactions() {
               <CardContent>
                 <div className="text-2xl font-bold">${(analytics.pendingPayments / 100).toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  From {transactions.filter((t) => t.transactionStatus === 'PENDING').length} transactions
+                  From {transactions.filter((t) => (t.transactionStatus || '').toUpperCase() === 'REQUIRES_CAPTURE').length} transactions
                 </p>
               </CardContent>
             </Card>
 
-            {/* Total Refunds */}
+            {/* Total Cancelled */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="text-sm font-medium">Total Refunds</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Refunded</CardTitle>
                 <RotateCcw className="h-5 w-5 text-blue-600" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${(analytics.totalRefunds / 100).toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  From {transactions.filter((t) => t.transactionStatus === 'REFUNDED').length} refunded transactions
+                  From {transactions.filter((t) => (t.transactionStatus || '').toUpperCase() === 'CANCELLED').length} cancelled transactions
                 </p>
               </CardContent>
             </Card>
@@ -345,10 +446,10 @@ export default function ViewTransactions() {
                     className="w-full px-3 py-2 border border-input rounded-md text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                   >
                     <option value="">All Status</option>
-                    <option value="CAPTURED">Captured</option>
-                    <option value="PENDING">Pending</option>
-                    <option value="FAILED">Failed</option>
-                    <option value="REFUNDED">Refunded</option>
+                    <option value="Captured">Captured</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Failed">Failed</option>
+                    <option value="Refunded">Refunded</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
                 </div>
@@ -371,11 +472,25 @@ export default function ViewTransactions() {
           {/* Transactions Table */}
           <Card>
             <CardHeader>
-              <CardTitle>
+              <CardTitle className="flex items-center justify-between">
                 Transactions
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
+               
+
+                <div className="flex items-end md:items-center justify-end mb-4">
+
+                     
+                    <button
+                    onClick={generateCSV}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md shadow hover:bg-primary/90 transition-colors text-sm font-semibold"
+                    title="Download CSV Report"
+                    >
+                    <Download className="h-4 w-4" />
+                    Generate Report
+                    </button>
+                    <span className="ml-6 text-sm font-normal text-muted-foreground">
                   ({filteredTransactions.length} results)
                 </span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
