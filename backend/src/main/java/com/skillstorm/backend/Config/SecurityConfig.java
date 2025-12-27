@@ -45,7 +45,9 @@ public class SecurityConfig {
         http
             .cors(Customizer.withDefaults())
             
-            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())) //Allow JS to read CSRF token cookie
+            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .ignoringRequestMatchers("/users/create") // Disable CSRF for user creation endpoint only
+            ) //Allow JS to read CSRF token cookie
 
             .authorizeHttpRequests(authorize -> {
                 authorize
