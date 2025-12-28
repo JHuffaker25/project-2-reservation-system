@@ -48,7 +48,7 @@ public class SecurityConfig {
             // Enable CSRF with cookie-based token repository
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers("/oauth2/**", "/login/oauth2/**")
+                .ignoringRequestMatchers("/oauth2/**", "/login/oauth2/**", "/users/create")
             )
 
             .authorizeHttpRequests(authorize -> {
@@ -57,6 +57,7 @@ public class SecurityConfig {
             //PERMITTED ROUTES//////////////////////////////////////////////////////////////////////////////
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                 .requestMatchers("/users/csrf").permitAll() // Allow fetching CSRF token without authentication
+                .requestMatchers("/users/create").permitAll() // Allow user registration without authentication
 
 
 
