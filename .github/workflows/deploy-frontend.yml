@@ -52,3 +52,11 @@ jobs:
           elif [ "${{ github.ref_name }}" = "dev" ]; then
             aws s3 sync dist/ s3://project2-frontend-group1-dev-397345411365-us-east-1
           fi
+
+      - name: Invalidate CloudFront
+        run: |
+          if [ "${{ github.ref_name }}" = "dev" ]; then
+            aws cloudfront create-invalidation \
+              --distribution-id E3UWL0IR7J2WMG \
+              --paths "/*"
+          fi
