@@ -171,16 +171,45 @@ public class AppUserController {
     //To be adjusted to account for authentication
     //required fields: email, password, role, firstName, lastName, phone
     @PostMapping("/create")
-    public ResponseEntity<Object> createUser(@RequestBody AppUser user) {
+    public ResponseEntity<Object> createUser(@RequestBody(required = false) AppUser user) {
+        System.out.println("=== CREATE USER ENDPOINT CALLED ===");
+        System.out.println("Request body user object: " + user);
+
         try {
+            if (user == null) {
+                System.out.println("ERROR: User object is null");
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Request body is null or could not be parsed");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+
+            System.out.println("User email: " + user.getEmail());
+            System.out.println("User firstName: " + user.getFirstName());
+            System.out.println("User lastName: " + user.getLastName());
+            System.out.println("User phone: " + user.getPhone());
+            System.out.println("User role: " + user.getRole());
+
             AppUser createdUser = appUserService.createUser(user);
+            System.out.println("User created successfully: " + createdUser.getId());
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
         } catch (StripeException e) {
-            return ResponseEntity.badRequest().header("Error", "Stripe error: " + e.getMessage()).build();
+            System.out.println("StripeException caught: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Stripe error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().header("Error", "Invalid user data: " + e.getMessage()).build();
+            System.out.println("IllegalArgumentException caught: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Invalid user data: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().header("Error", "There was an internal server error").build();
+            System.out.println("Exception caught: " + e.getClass().getName() + " - " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "There was an internal server error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 
