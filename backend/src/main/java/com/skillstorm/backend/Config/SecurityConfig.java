@@ -149,6 +149,7 @@ public class SecurityConfig {
                     .oidcUserService(customOAuth2UserService)
                 )
                 .defaultSuccessUrl(frontendUrl + "/auth/callback", true)
+                .failureUrl(frontendUrl + "/signin?error=oauth")
             )
 
 
