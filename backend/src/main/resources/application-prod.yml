@@ -2,6 +2,11 @@ spring:
 
   server:
     port: ${SERVER_PORT:5000}
+    servlet:
+      session:
+        cookie:
+          secure: true
+          same-site: lax
 
 
   mail:
