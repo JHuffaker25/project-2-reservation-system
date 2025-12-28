@@ -161,7 +161,17 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(frontendUrl));
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowedHeaders(List.of("*")); // Allow all headers
+        // Explicitly list headers - wildcard doesn't work properly with credentials: true
+        config.setAllowedHeaders(List.of(
+            "Content-Type",
+            "Authorization",
+            "X-XSRF-TOKEN",
+            "Accept",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
+        config.setExposedHeaders(List.of("*")); // Expose all headers
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
