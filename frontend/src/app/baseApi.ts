@@ -3,10 +3,25 @@ import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import type { FetchArgs } from '@reduxjs/toolkit/query';
 import { getCredentials } from '@/features/auth/authMemory';
 
+// Helper function to get CSRF token from cookie
+function getCsrfTokenFromCookie(): string | null {
+  if (typeof document === 'undefined') return null;
+  const name = 'XSRF-TOKEN=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArray = decodedCookie.split(';');
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i].trim();
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length, cookie.length);
+    }
+  }
+  return null;
+}
+
 // Base query with Basic Auth headers and CSRF token
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_BASE_URL,
-  credentials: 'include', // Always send cookies (for CSRF)
+  credentials: 'include', // Always send cookies (for CSRF and session)
   prepareHeaders: (headers) => {
     // Add Basic Auth if present
     const creds = getCredentials();
@@ -16,12 +31,10 @@ const baseQuery = fetchBaseQuery({
         `Basic ${btoa(`${creds.email}:${creds.password}`)}`
       );
     }
-    // Add CSRF token from localStorage (set by /users/csrf fetch)
-    if (typeof window !== 'undefined') {
-      const csrfToken = localStorage.getItem('csrfToken');
-      if (csrfToken) {
-        headers.set('X-XSRF-TOKEN', csrfToken);
-      }
+    // Add CSRF token from cookie (automatically set by Spring's CookieCsrfTokenRepository)
+    const csrfToken = getCsrfTokenFromCookie();
+    if (csrfToken) {
+      headers.set('X-XSRF-TOKEN', csrfToken);
     }
     return headers;
   },
