@@ -46,9 +46,21 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
 
             // Enable CSRF with cookie-based token repository
+            // Note: In production with cross-origin setup (S3 + Elastic Beanstalk),
+            // CSRF cookies don't work reliably. We're using Basic Auth (Authorization header)
+            // for authenticated requests, which isn't vulnerable to CSRF attacks.
+            // CSRF is primarily needed for session/cookie-based auth, not header-based auth.
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers("/oauth2/**", "/login/oauth2/**", "/users/create")
+                .ignoringRequestMatchers(
+                    "/oauth2/**",
+                    "/login/oauth2/**",
+                    "/users/create",
+                    "/users/attach/**",
+                    "/users/delete/**",
+                    "/reservations/**",
+                    "/transactions/**"
+                )
             )
 
             .authorizeHttpRequests(authorize -> {
