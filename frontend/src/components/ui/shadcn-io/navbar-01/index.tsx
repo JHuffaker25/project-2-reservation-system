@@ -204,7 +204,8 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                     <NavigationMenuList className="flex-col items-start gap-1">
                       {navLinks.map((link, index) => (
                         <NavigationMenuItem key={index} className="w-full">
-                          <button
+                          <Link
+                            to={link.href}
                             className={cn(
                               "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
                               link.active
@@ -213,7 +214,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                             )}
                           >
                             {link.label}
-                          </button>
+                          </Link>
                         </NavigationMenuItem>
                       ))}
                     </NavigationMenuList>
@@ -230,7 +231,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                   <div className="text-2xl">
                     {logo}
                   </div>
-                  <span className="hidden font-bold text-xl sm:inline-block">Solaris2</span>
+                  <span className="hidden font-bold text-xl sm:inline-block">Solaris</span>
               </Link>
               {/* Navigation menu */}
               {!isMobile && (
