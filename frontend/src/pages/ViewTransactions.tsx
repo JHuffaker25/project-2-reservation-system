@@ -673,8 +673,8 @@ console.log('Sum of all transaction amounts:', totalAmount);
                 <div className="bg-gray-50 rounded-xl p-5 shadow-sm">
                   <h3 className="text-lg font-bold mb-3 text-gray-700 tracking-tight">Stay Details</h3>
                   <div className="flex flex-col gap-2 text-gray-700">
-                    <span><span className="font-semibold">Check-in:</span> {selectedReservation.checkIn ? new Date(selectedReservation.checkIn).toLocaleDateString() : 'N/A'}</span>
-                    <span><span className="font-semibold">Check-out:</span> {selectedReservation.checkOut ? new Date(selectedReservation.checkOut).toLocaleDateString() : 'N/A'}</span>
+                    <span><span className="font-semibold">Check-in:</span> {selectedReservation.checkIn ? new Date(new Date(selectedReservation.checkIn).getTime() + (new Date(selectedReservation.checkIn).getTimezoneOffset() * 60000)).toLocaleDateString() : 'N/A'}</span>
+                    <span><span className="font-semibold">Check-out:</span> {selectedReservation.checkOut ? new Date(new Date(selectedReservation.checkOut).getTime() + (new Date(selectedReservation.checkOut).getTimezoneOffset() * 60000)).toLocaleDateString() : 'N/A'}</span>
                     {selectedRoomType && <span><span className="font-semibold">Room Type:</span> {selectedRoomType.name}</span>}
                   </div>
                 </div>
