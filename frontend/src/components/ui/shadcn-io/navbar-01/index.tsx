@@ -259,6 +259,8 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
           <div className="flex items-center gap-3">
             {(() => {
               const auth = useAppSelector(state => state.auth);
+              // Helper: Detect if user is Google OAuth
+              const isGoogleOAuth = auth.user && auth.user.isGoogleUser === true;
               if (auth.isAuthenticated) {
                 return (
                   <>
@@ -281,11 +283,19 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                       className="group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 no-underline text-foreground/80 hover:text-foreground cursor-pointer"
                       onClick={async () => {
                         try {
-                          await logout().unwrap(); // Always call logout mutation for all users
+                          await logout().unwrap();
                         } catch {}
                         clearCredentials();
                         dispatch({ type: 'auth/logout' });
-                        window.location.reload();
+                        if (isGoogleOAuth) {
+                          // Google logout: revoke session at Google and redirect to app home
+                          const googleLogoutUrl =
+                            'https://accounts.google.com/Logout?continue=https://appengine.google.com/_ah/logout?continue=' +
+                            encodeURIComponent(window.location.origin);
+                          window.location.href = googleLogoutUrl;
+                        } else {
+                          window.location.reload();
+                        }
                       }}
                     >
                       Sign Out
