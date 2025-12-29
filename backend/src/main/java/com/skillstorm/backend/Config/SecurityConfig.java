@@ -59,7 +59,8 @@ public class SecurityConfig {
                     "/users/attach/**",
                     "/users/delete/**",
                     "/reservations/**",
-                    "/transactions/**"
+                    "/transactions/**",
+                    "/logout"
                 )
             )
 
