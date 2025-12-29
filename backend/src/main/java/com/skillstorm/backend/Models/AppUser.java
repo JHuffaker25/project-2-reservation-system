@@ -32,6 +32,8 @@ public class AppUser implements UserDetails {
 
 	private String stripeCustomerId;
 
+	private Boolean isGoogleUser = false;
+
 	// Embedded Preferences class
 	public static class Preferences {
 		
@@ -67,6 +69,11 @@ public class AppUser implements UserDetails {
 
 	public AppUser(String email, String password, String role, String firstName, String lastName, 
 				   String phone, Preferences preferences, String stripeCustomerId) {
+		this(email, password, role, firstName, lastName, phone, preferences, stripeCustomerId, false);
+	}
+
+	public AppUser(String email, String password, String role, String firstName, String lastName, 
+				   String phone, Preferences preferences, String stripeCustomerId, Boolean isGoogleUser) {
 		this.email = email;
 		this.password = password;
 		this.role = role;
@@ -75,7 +82,10 @@ public class AppUser implements UserDetails {
 		this.phone = phone;
 		this.preferences = preferences;
 		this.stripeCustomerId = stripeCustomerId;
+		this.isGoogleUser = isGoogleUser != null ? isGoogleUser : false;
 	}
+		
+	
 
 	// Getters and Setters
 	public String getId() {
@@ -148,6 +158,14 @@ public class AppUser implements UserDetails {
 
 	public void setStripeCustomerId(String stripeCustomerId) {
 		this.stripeCustomerId = stripeCustomerId;
+	}
+
+	public Boolean getIsGoogleUser() {
+		return isGoogleUser;
+	}
+
+	public void setIsGoogleUser(Boolean isGoogleUser) {
+		this.isGoogleUser = isGoogleUser;
 	}
 
 

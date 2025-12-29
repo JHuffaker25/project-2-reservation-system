@@ -51,6 +51,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OidcUserReques
             user.setLastName(lastName);
             user.setRole("CUSTOMER");
             user.setPassword("EXTERNAL"); //Note: The password text 'EXTERNAL' still gets hashed before storage
+            user.setIsGoogleUser(true); // Set isGoogleUser to true for OAuth2 users
             try {
                 appUserService.createUser(user);
             } catch (StripeException ex) {

@@ -67,6 +67,7 @@ public class AppUserService implements UserDetailsService {
 
     // Create user and Stripe customer
     public AppUser createUser(AppUser user) throws StripeException {
+        // isGoogleUser is optional and can be set by the caller (e.g., OAuth2 service)
         // Validate required fields
         if (user.getEmail() == null || user.getPassword() == null || user.getRole() == null ||
             user.getFirstName() == null || user.getLastName() == null) {
