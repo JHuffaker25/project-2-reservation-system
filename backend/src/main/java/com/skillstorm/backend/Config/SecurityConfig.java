@@ -45,23 +45,25 @@ public class SecurityConfig {
         http
             .cors(Customizer.withDefaults())
 
-            // Enable CSRF with cookie-based token repository
-            // Note: In production with cross-origin setup (S3 + Elastic Beanstalk),
-            // CSRF cookies don't work reliably. We're using Basic Auth (Authorization header)
-            // for authenticated requests, which isn't vulnerable to CSRF attacks.
-            // CSRF is primarily needed for session/cookie-based auth, not header-based auth.
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers(
-                    "/oauth2/**",
-                    "/login/oauth2/**",
-                    "/users/create",
-                    "/users/attach/**",
-                    "/users/delete/**",
-                    "/reservations/**",
-                    "/transactions/**"
-                )
-            )
+            // CSRF disabled 
+            .csrf(csrf -> csrf.disable())
+            
+            // Previous CSRF config with cookie-based token repository, commented out:
+            // .csrf(csrf -> csrf
+            //     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            //     .ignoringRequestMatchers(
+            //         "/oauth2/**",
+            //         "/login/oauth2/**",
+            //         "/users/create",
+            //         "/users/attach/**",
+            //         "/users/delete/**",
+            //         "/users/update/**",
+            //         "/reservations/**",
+            //         "/transactions/**",
+            //         "/logout",
+            //         "/s3/**"
+            //     )
+            // )
 
             .authorizeHttpRequests(authorize -> {
                 authorize
@@ -96,7 +98,10 @@ public class SecurityConfig {
                 .requestMatchers("/room-types/create").hasRole("ADMIN") //POST create room type
                 .requestMatchers("/room-types/update/{id}").hasRole("ADMIN") //PUT update room type
                 .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN") //DELETE room type by ID
-                
+
+                //S3
+                .requestMatchers("/s3/presigned-url/**").hasRole("ADMIN") //POST generate pre-signed URLs (admin only)
+
                 //TRANSACTION
                 .requestMatchers("/transactions/all").hasRole("ADMIN") //GET all transactions
                 .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN") //DELETE transaction by ID
@@ -128,7 +133,8 @@ public class SecurityConfig {
                 .requestMatchers("/transactions/user/{userId}").hasAnyRole("ADMIN", "CUSTOMER") //GET transaction by USER ID
                 .requestMatchers("/transactions/reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") //GET transaction by RESERVATION ID
 
-
+                .requestMatchers("/logout").permitAll() // Logout for any authenticated user
+                .requestMatchers("/users/logout").permitAll() // Logout for any authenticated user
 
             //TEST ROUTES/////////////////////////////////////////////////////////////////////////////////////
                 .requestMatchers("/tests/hello").permitAll()

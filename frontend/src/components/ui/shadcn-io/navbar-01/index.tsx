@@ -204,7 +204,8 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                     <NavigationMenuList className="flex-col items-start gap-1">
                       {navLinks.map((link, index) => (
                         <NavigationMenuItem key={index} className="w-full">
-                          <button
+                          <Link
+                            to={link.href}
                             className={cn(
                               "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
                               link.active
@@ -213,7 +214,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                             )}
                           >
                             {link.label}
-                          </button>
+                          </Link>
                         </NavigationMenuItem>
                       ))}
                     </NavigationMenuList>
@@ -230,7 +231,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                   <div className="text-2xl">
                     {logo}
                   </div>
-                  <span className="hidden font-bold text-xl sm:inline-block">Company</span>
+                  <span className="hidden font-bold text-xl sm:inline-block">Solaris</span>
               </Link>
               {/* Navigation menu */}
               {!isMobile && (
@@ -259,8 +260,6 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
           <div className="flex items-center gap-3">
             {(() => {
               const auth = useAppSelector(state => state.auth);
-              // Helper: Detect if user is Google OAuth
-              const isGoogleOAuth = auth.user && auth.user.isGoogleUser === true;
               if (auth.isAuthenticated) {
                 return (
                   <>
@@ -287,15 +286,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                         } catch {}
                         clearCredentials();
                         dispatch({ type: 'auth/logout' });
-                        if (isGoogleOAuth) {
-                          // Google logout: revoke session at Google and redirect to app home
-                          const googleLogoutUrl =
-                            'https://accounts.google.com/Logout?continue=https://appengine.google.com/_ah/logout?continue=' +
-                            encodeURIComponent(window.location.origin);
-                          window.location.href = googleLogoutUrl;
-                        } else {
-                          window.location.reload();
-                        }
+                        window.location.assign('/');
                       }}
                     >
                       Sign Out

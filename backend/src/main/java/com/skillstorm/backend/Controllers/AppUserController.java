@@ -53,9 +53,16 @@ public class AppUserController {
     public ResponseEntity<AppUserResponseDTO> getUserById(@PathVariable String id) {
     try {
         AppUser user = appUserService.getUserById(id);
-        return ResponseEntity.ok(new AppUserResponseDTO(user.getId(), user.getEmail(), 
-        user.getRole(), user.getFirstName(), user.getLastName(), user.getPhone(), 
-        user.getPreferences()));
+        return ResponseEntity.ok(new AppUserResponseDTO(
+            user.getId(),
+            user.getEmail(),
+            user.getRole(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getPhone(),
+            user.getIsGoogleUser(),
+            user.getPreferences()
+        ));
     } catch (IllegalArgumentException e) {
         return ResponseEntity.notFound().build();
     } catch (Exception e) {
@@ -94,6 +101,7 @@ public class AppUserController {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
+                user.getIsGoogleUser(),
                 user.getPreferences()
             );
             return ResponseEntity.ok(dto);
@@ -132,6 +140,7 @@ public class AppUserController {
                 updatedUser.getFirstName(),
                 updatedUser.getLastName(),
                 updatedUser.getPhone(),
+                updatedUser.getIsGoogleUser(),
                 updatedUser.getPreferences()
             ));
         } catch (IllegalArgumentException e) {
@@ -155,6 +164,7 @@ public class AppUserController {
                 updatedUser.getFirstName(),
                 updatedUser.getLastName(),
                 updatedUser.getPhone(),
+                updatedUser.getIsGoogleUser(),
                 updatedUser.getPreferences()
             ));
         } catch (IllegalArgumentException e) {

@@ -9,6 +9,7 @@ public record AppUserResponseDTO(
     String firstName,
     String lastName,
     String phone,
+    boolean isGoogleUser,
     AppUser.Preferences preferences
 ) {}
 
