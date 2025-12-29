@@ -58,9 +58,11 @@ public class SecurityConfig {
                     "/users/create",
                     "/users/attach/**",
                     "/users/delete/**",
+                    "/users/update/**",
                     "/reservations/**",
                     "/transactions/**",
-                    "/logout"
+                    "/logout",
+                    "/s3/**"
                 )
             )
 
@@ -97,7 +99,10 @@ public class SecurityConfig {
                 .requestMatchers("/room-types/create").hasRole("ADMIN") //POST create room type
                 .requestMatchers("/room-types/update/{id}").hasRole("ADMIN") //PUT update room type
                 .requestMatchers("/room-types/delete/{id}").hasRole("ADMIN") //DELETE room type by ID
-                
+
+                //S3
+                .requestMatchers("/s3/presigned-url/**").hasRole("ADMIN") //POST generate pre-signed URLs (admin only)
+
                 //TRANSACTION
                 .requestMatchers("/transactions/all").hasRole("ADMIN") //GET all transactions
                 .requestMatchers("/transactions/delete/{id}").hasRole("ADMIN") //DELETE transaction by ID
