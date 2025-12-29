@@ -26,6 +26,7 @@ export const authApi = baseApi.injectEndpoints({
             query: () => ({
                 url: "/logout",
                 method: "POST",
+                credentials: "include",
             }),
         }),
     }),
