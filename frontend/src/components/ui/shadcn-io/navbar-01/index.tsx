@@ -230,7 +230,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                   <div className="text-2xl">
                     {logo}
                   </div>
-                  <span className="hidden font-bold text-xl sm:inline-block">Company</span>
+                  <span className="hidden font-bold text-xl sm:inline-block">Solaris</span>
               </Link>
               {/* Navigation menu */}
               {!isMobile && (
@@ -285,8 +285,7 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                         } catch {}
                         clearCredentials();
                         dispatch({ type: 'auth/logout' });
-                        // Force a reload with cache-busting to ensure session is cleared for OAuth users
-                        window.location.replace(window.location.pathname + '?logout=' + Date.now());
+                        window.location.assign('/');
                       }}
                     >
                       Sign Out
