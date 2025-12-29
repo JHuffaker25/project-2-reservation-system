@@ -81,6 +81,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         email: form.email,
         password: form.password,
         role: "CUSTOMER",
+        isGoogleUser: false,
       })
         .unwrap()
         .then(async () => {

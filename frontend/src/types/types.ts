@@ -48,6 +48,7 @@ export interface User {
   lastName?: string
   phone?: string
   preferences?: Preferences
+  isGoogleUser?: boolean
 }
 
 export interface Room {
