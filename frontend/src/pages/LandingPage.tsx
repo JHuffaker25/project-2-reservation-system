@@ -17,7 +17,7 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1 text-white">
               <h1 className="text-4xl md:text-5xl font-bold mb-3">
-                Welcome To Hotel Company
+                Welcome To Hotel Solaris
               </h1>
               <p className="text-lg max-w-2xl mb-6">
                 Discover comfort, style, and convenience. Book your next stay with us and experience hospitality redefined.
@@ -33,7 +33,7 @@ export default function LandingPage() {
       {/* Middle Section */}
       <div className="py-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="flex flex-col items-center justify-self-start">
+          <div className="flex flex-col items-center lg:justify-self-start">
             <img
               src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=120&h=120&fit=crop"
               alt="Luxury"
@@ -57,7 +57,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col items-center justify-self-end">
+          <div className="flex flex-col items-center lg:justify-self-end">
             <img
               src="https://images.unsplash.com/photo-1715635845783-a184542d95e5?w=120&h=120&fit=crop"
               alt="Service"
