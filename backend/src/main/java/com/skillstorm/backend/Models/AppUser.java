@@ -1,0 +1,212 @@
+package com.skillstorm.backend.Models;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+@Document(collection = "users")
+public class AppUser implements UserDetails {
+	
+	@Id
+	private String id;
+
+	private String email;
+
+	private String password; //IS HASHED
+
+	private String role;
+
+	private String firstName;
+
+	private String lastName;
+
+	private String phone;
+
+	private Preferences preferences;
+
+	private String stripeCustomerId;
+
+	private Boolean isGoogleUser = false;
+
+	// Embedded Preferences class
+	public static class Preferences {
+		
+		private Boolean emailNotifications;
+		private Boolean darkMode; // true = dark, false = light
+
+		public Preferences() {}
+
+		public Preferences(Boolean emailNotifications, Boolean darkMode) {
+			this.emailNotifications = emailNotifications;
+			this.darkMode = darkMode;
+		}
+
+		public Boolean getEmailNotifications() {
+			return emailNotifications;
+		}
+
+		public void setEmailNotifications(Boolean emailNotifications) {
+			this.emailNotifications = emailNotifications;
+		}
+
+		public Boolean getDarkMode() {
+			return darkMode;
+		}
+
+		public void setDarkMode(Boolean darkMode) {
+			this.darkMode = darkMode;
+		}
+	}
+
+	// Constructors
+	public AppUser() {}
+
+	public AppUser(String email, String password, String role, String firstName, String lastName, 
+				   String phone, Preferences preferences, String stripeCustomerId) {
+		this(email, password, role, firstName, lastName, phone, preferences, stripeCustomerId, false);
+	}
+
+	public AppUser(String email, String password, String role, String firstName, String lastName, 
+				   String phone, Preferences preferences, String stripeCustomerId, Boolean isGoogleUser) {
+		this.email = email;
+		this.password = password;
+		this.role = role;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.phone = phone;
+		this.preferences = preferences;
+		this.stripeCustomerId = stripeCustomerId;
+		this.isGoogleUser = isGoogleUser != null ? isGoogleUser : false;
+	}
+		
+	
+
+	// Getters and Setters
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public Preferences getPreferences() {
+		return preferences;
+	}
+
+	public void setPreferences(Preferences preferences) {
+		this.preferences = preferences;
+	}
+
+	public String getStripeCustomerId() {
+		return stripeCustomerId;
+	}
+
+	public void setStripeCustomerId(String stripeCustomerId) {
+		this.stripeCustomerId = stripeCustomerId;
+	}
+
+	public Boolean getIsGoogleUser() {
+		return isGoogleUser;
+	}
+
+	public void setIsGoogleUser(Boolean isGoogleUser) {
+		this.isGoogleUser = isGoogleUser;
+	}
+
+
+
+	//UserDetails interface methods
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+    
+		Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+
+		// Add role as a granted authority
+		SimpleGrantedAuthority userRole = new SimpleGrantedAuthority("ROLE_" + this.role);
+		authorities.add(userRole);
+
+		return authorities;
+    
+}
+	@Override
+	public String getUsername() {
+		return this.email;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
+
+	
+}

@@ -1,100 +1,31 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
+  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Table, TableHeader, TableRow, TableCell, TableBody } from '@/components/ui/table';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight, Calendar, X, Search, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, X, Search, ChevronDown, Edit } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useGetAllRoomsQuery } from '@/features/room/roomApi';
+import { useGetRoomTypeByReservationIdQuery } from '@/features/roomType/roomTypeApi';
+import DateRangeCalendar from '@/components/date-range-calendar';
+import {
+  useGetReservationsQuery,
+  useCheckInReservationMutation,
+  useCheckOutReservationMutation,
+  useCancelReservationMutation,
+  useUpdateReservationMutation
+} from '@/features/reservation/reservationApi';
+import Loader from '@/components/loader';
 
+const statuses = ['All statuses', 'PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
 
-// Reservation type definition
-type Reservation = {
-  id: string;
-  guestName: string;
-  email: string;
-  roomType: string;
-  room: string;
-  checkIn: Date;
-  checkOut: Date;
-  status: string;
-  guests: number;
-  totalPrice: number;
-};
-
-// Dummy reservation data
-const dummyReservations = [
-  {
-    id: 'RSV1001',
-    guestName: 'John Doe',
-    email: 'john@example.com',
-    roomType: 'Suite',
-    room: '305',
-    checkIn: new Date(2025, 11, 10),
-    checkOut: new Date(2025, 11, 15),
-    status: 'Upcoming',
-    guests: 2,
-    totalPrice: 1200,
-  },
-  {
-    id: 'RSV1002',
-    guestName: 'Jane Smith',
-    email: 'jane@example.com',
-    roomType: 'Deluxe',
-    room: '201',
-    checkIn: new Date(2025, 11, 5),
-    checkOut: new Date(2025, 11, 8),
-    status: 'Completed',
-    guests: 2,
-    totalPrice: 600,
-  },
-  {
-    id: 'RSV1003',
-    guestName: 'Michael Johnson',
-    email: 'michael@example.com',
-    roomType: 'Family',
-    room: '405',
-    checkIn: new Date(2025, 11, 20),
-    checkOut: new Date(2025, 11, 25),
-    status: 'Upcoming',
-    guests: 4,
-    totalPrice: 1500,
-  },
-  {
-    id: 'RSV1004',
-    guestName: 'Sarah Williams',
-    email: 'sarah@example.com',
-    roomType: 'Standard',
-    room: '102',
-    checkIn: new Date(2025, 10, 28),
-    checkOut: new Date(2025, 11, 2),
-    status: 'Canceled',
-    guests: 1,
-    totalPrice: 400,
-  },
-  {
-    id: 'RSV1005',
-    guestName: 'Emily Davis',
-    email: 'emily@example.com',
-    roomType: 'Penthouse',
-    room: '801',
-    checkIn: new Date(2025, 11, 12),
-    checkOut: new Date(2026, 11, 16),
-    status: 'Ongoing',
-    guests: 2,
-    totalPrice: 2500,
-  },
-];
-
-const roomTypes = ['All types', 'Standard', 'Deluxe', 'Suite', 'Family', 'Ocean View', 'Penthouse'];
-const statuses = ['All statuses', 'Upcoming', 'Completed', 'Canceled', 'Current'];
-
-// Calendar-based date range picker from Transactions page
 const CalendarDateRangePicker = ({ startDate, endDate, onChange }: {
   startDate: Date | null;
   endDate: Date | null;
@@ -221,7 +152,16 @@ const CalendarDateRangePicker = ({ startDate, endDate, onChange }: {
         </div>
         {(tempStartDate || tempEndDate) && (
           <div className="border-t p-3 flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => { setTempStartDate(null); setTempEndDate(null); }} className="flex-1 cursor-pointer">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setTempStartDate(null);
+                setTempEndDate(null);
+                onChange(null, null); // Also clear in parent
+              }}
+              className="flex-1 cursor-pointer"
+            >
               <X className="mr-1 h-4 w-4" />
               Clear
             </Button>
@@ -247,7 +187,6 @@ const FilterPanel = ({
   filters: {
     dateStart: Date | null;
     dateEnd: Date | null;
-    roomType: string;
     status: string;
   };
   onFilterChange: (filters: any) => void;
@@ -257,37 +196,24 @@ const FilterPanel = ({
         <CardTitle>Filters & Search</CardTitle>
     </CardHeader>
     <CardContent>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
 
         {/* Search Bar */}
         <div className="relative lg:col-span-2">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
             type="text"
-            placeholder="Search by guest or room..."
+            placeholder="Search by guest, room #, or dates."
             className="w-full pl-10 pr-4 py-2 border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             value={search}
             onChange={e => onSearch(e.target.value)}
             />
         </div>
-        {/* Type Filter */}
-        <div className="relative">
-            <select
-            value={filters.roomType}
-            onChange={e => onFilterChange({ ...filters, roomType: e.target.value })}
-            className="w-full px-3 py-2 border border-input rounded-md text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-            >
-            {roomTypes.map(type => (
-              <option key={type} value={type === 'All types' ? '' : type}>{type}</option>
-            ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
-        </div>
         {/* Status Filter */}
         <div className="relative">
             <select
-            value={filters.roomType}
-            onChange={e => onFilterChange({ ...filters, roomType: e.target.value })}
+            value={filters.status}
+            onChange={e => onFilterChange({ ...filters, status: e.target.value })}
             className="w-full px-3 py-2 border border-input rounded-md text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary bg-background"
             >
             {statuses.map(status => (
@@ -311,146 +237,59 @@ const FilterPanel = ({
 
 // Reservation status badge
 const StatusBadge = ({ status }: { status: string }) => {
-  const config: Record<string, { bg: string; text: string }> = {
-    Upcoming: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-    Completed: { bg: 'bg-green-100', text: 'text-green-800' },
-    Canceled: { bg: 'bg-red-100', text: 'text-red-800' },
-    Ongoing: { bg: 'bg-blue-100', text: 'text-blue-800' },
+  // Map status to color classes
+  const statusColors: Record<string, string> = {
+    PENDING: 'bg-yellow-100 text-yellow-800',
+    CONFIRMED: 'bg-blue-100 text-blue-800',
+    COMPLETED: 'bg-green-100 text-green-800',
+    CANCELLED: 'bg-red-100 text-red-800',
+    ONGOING: 'bg-blue-100 text-blue-800',
+    UPCOMING: 'bg-yellow-100 text-yellow-800',
   };
-  const c = config[status] || { bg: 'bg-gray-100', text: 'text-gray-800' };
-  return <span className={`px-3 py-1 rounded-full text-xs font-semibold ${c.bg} ${c.text}`}>{status}</span>;
-};
-
-// Edit Reservation Dialog
-const EditReservationModal = ({
-  open,
-  reservation,
-  onClose,
-  onSave,
-}: {
-  open: boolean;
-  reservation: any;
-  onClose: () => void;
-  onSave: (updated: any) => void;
-}) => {
-  const [form, setForm] = useState(reservation);
-  
-  useEffect(() => {
-    setForm(reservation);
-  }, [reservation]);
-
-  if (!reservation || !form) return null;
-
-  return (
-    <Dialog open={open} onOpenChange={val => { if (!val) onClose(); }}>
-      <DialogContent className="max-w-lg mx-auto">
-        {open && reservation && (
-          <Card className="shadow-none border-none">
-            <CardHeader>
-              <CardTitle>Edit Reservation</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-semibold">First Name</label>
-                <Input
-                  value={form.firstName}
-                  onChange={e => setForm({ ...form, firstName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Last Name</label>
-                <Input
-                  value={form.lastName}
-                  onChange={e => setForm({ ...form, lastName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Email</label>
-                <Input
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2">
-                <div>
-                  <label className="text-sm font-semibold">Check-in</label>
-                  <Input
-                    type="date"
-                    value={form.checkIn ? form.checkIn.toISOString().slice(0, 10) : ''}
-                    onChange={e => setForm({ ...form, checkIn: new Date(e.target.value) })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-semibold">Check-out</label>
-                  <Input
-                    type="date"
-                    value={form.checkOut ? form.checkOut.toISOString().slice(0, 10) : ''}
-                    onChange={e => setForm({ ...form, checkOut: new Date(e.target.value) })}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Guests</label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={form.guests}
-                  onChange={e => setForm({ ...form, guests: Number(e.target.value) })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Room Type</label>
-                <select
-                  className="w-full px-3 py-2 h-10 border border-input rounded-md bg-background text-foreground text-sm"
-                  value={form.roomType}
-                  onChange={e => setForm({ ...form, roomType: e.target.value })}
-                >
-                  {roomTypes.filter(t => t !== 'All').map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-semibold">Status</label>
-                <select
-                  className="w-full px-3 py-2 h-10 border border-input rounded-md bg-background text-foreground text-sm"
-                  value={form.status}
-                  onChange={e => setForm({ ...form, status: e.target.value })}
-                >
-                  {statuses.filter(s => s !== 'All').map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-2 justify-end pt-4">
-                <Button variant="outline" onClick={onClose} className="cursor-pointer">Cancel</Button>
-                <Button
-                  disabled={!(form.checkIn && form.checkOut && form.checkOut > form.checkIn && form.guests > 0)}
-                  onClick={() => onSave(form)}
-                  className="cursor-pointer"
-                >
-                  Save Changes
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
+  const colorClass = statusColors[status?.toUpperCase()] || 'bg-gray-100 text-gray-800';
+  return <span className={`px-3 py-1 rounded-full text-xs font-semibold ${colorClass}`}>{status}</span>;
 };
 
 // Main ManageReservations page
-const PAGE_SIZE = 5;
-type SortKey = 'checkIn' | 'guestName' | 'status';
-const sortOptions = [
-  { label: 'Check-in Date', value: 'checkIn' },
-  { label: 'Guest Name', value: 'guestName' },
-  { label: 'Status', value: 'status' },
-] as const;
+const PAGE_SIZE = 10;
+type SortKey = 'checkIn' | 'guestName' | 'status' | 'roomNumber' | 'totalPrice' | 'checkOut';
+// const sortOptions = [
+//   { label: 'Check-in Date', value: 'checkIn' },
+//   { label: 'Guest Name', value: 'guestName' },
+//   { label: 'Status', value: 'status' },
+// ] as const;
+
 
 const ManageReservations: React.FC = () => {
-  const [reservations, setReservations] = useState<Reservation[]>(dummyReservations);
+  const { data: reservations = [], isLoading, error, refetch } = useGetReservationsQuery();
+  const [checkInReservation, { isLoading: isCheckingIn }] = useCheckInReservationMutation();
+  const [checkOutReservation, { isLoading: isCheckingOut }] = useCheckOutReservationMutation();
+  const [cancelReservation, { isLoading: isCancelling }] = useCancelReservationMutation();
+    // Handlers for actions
+    const handleCheckIn = async (id: string) => {
+      try {
+        await checkInReservation(id).unwrap();
+        refetch();
+      } catch (e) {
+        // Optionally show error
+      }
+    };
+    const handleCheckOut = async (id: string) => {
+      try {
+        await checkOutReservation(id).unwrap();
+        refetch();
+      } catch (e) {
+        // Optionally show error
+      }
+    };
+    const handleCancel = async (id: string) => {
+      try {
+        await cancelReservation(id).unwrap();
+        refetch();
+      } catch (e) {
+        // Optionally show error
+      }
+    };
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     dateStart: null as Date | null,
@@ -458,36 +297,38 @@ const ManageReservations: React.FC = () => {
     roomType: '',
     status: '',
   });
-  const [sortBy, setSortBy] = useState<SortKey>('checkIn');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({ key: 'checkIn', direction: 'asc' });
   const [page, setPage] = useState(1);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editReservation, setEditReservation] = useState<any | null>(null);
 
-  // Filtering and searching
+  // Filtering and searching (updated for API model)
   const filteredReservations = useMemo(() => {
     return reservations.filter(r => {
-      // Search
       const searchLower = search.toLowerCase();
-      if (
-        searchLower &&
-        !r.guestName.toLowerCase().includes(searchLower) &&
-        !r.email.toLowerCase().includes(searchLower) &&
-        !r.id.toLowerCase().includes(searchLower)
-      ) {
-        return false;
+      // Search by guest name, room number, check-in, or check-out
+      if (searchLower) {
+        const guestName = `${r.firstName ?? ''} ${r.lastName ?? ''}`.toLowerCase();
+        const roomNumber = (r.roomNumber ?? '').toString().toLowerCase();
+        const checkIn = r.checkIn ? new Date(r.checkIn).toLocaleDateString().toLowerCase() : '';
+        const checkOut = r.checkOut ? new Date(r.checkOut).toLocaleDateString().toLowerCase() : '';
+        if (
+          !guestName.includes(searchLower) &&
+          !roomNumber.includes(searchLower) &&
+          !checkIn.includes(searchLower) &&
+          !checkOut.includes(searchLower)
+        ) {
+          return false;
+        }
       }
       // Date range
       if (
-        (filters.dateStart && r.checkIn < filters.dateStart) ||
-        (filters.dateEnd && r.checkOut > filters.dateEnd)
+        (filters.dateStart && new Date(r.checkIn) < filters.dateStart) ||
+        (filters.dateEnd && new Date(r.checkOut) > filters.dateEnd)
       ) {
         return false;
       }
-      // Room type
-      if (filters.roomType && r.roomType !== filters.roomType) {
-        return false;
-      }
+      // Room type (not available in model, skip or add if available)
       // Status
       if (filters.status && r.status !== filters.status) {
         return false;
@@ -496,63 +337,217 @@ const ManageReservations: React.FC = () => {
     });
   }, [reservations, search, filters]);
 
-  // Sorting
+  // Sorting (updated for API model)
   const sortedReservations = useMemo(() => {
     return [...filteredReservations].sort((a, b) => {
-      let valA: string | Date = (() => {
-        switch (sortBy) {
-          case 'checkIn': return a.checkIn;
-          case 'guestName': return a.guestName;
-          case 'status': return a.status;
+      let valA: string | number | Date = (() => {
+        switch (sort.key) {
+          case 'checkIn': return a.checkIn ? new Date(a.checkIn) : new Date(0);
+          case 'checkOut': return a.checkOut ? new Date(a.checkOut) : new Date(0);
+          case 'guestName': return `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim().toLowerCase();
+          case 'status': return a.status ?? '';
+          case 'roomNumber': return a.roomNumber ?? '';
+          case 'totalPrice': return typeof a.totalPrice === 'number' ? a.totalPrice : Number(a.totalPrice ?? 0);
           default: return '';
         }
       })();
-      let valB: string | Date = (() => {
-        switch (sortBy) {
-          case 'checkIn': return b.checkIn;
-          case 'guestName': return b.guestName;
-          case 'status': return b.status;
+      let valB: string | number | Date = (() => {
+        switch (sort.key) {
+          case 'checkIn': return b.checkIn ? new Date(b.checkIn) : new Date(0);
+          case 'checkOut': return b.checkOut ? new Date(b.checkOut) : new Date(0);
+          case 'guestName': return `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim().toLowerCase();
+          case 'status': return b.status ?? '';
+          case 'roomNumber': return b.roomNumber ?? '';
+          case 'totalPrice': return typeof b.totalPrice === 'number' ? b.totalPrice : Number(b.totalPrice ?? 0);
           default: return '';
         }
       })();
       if (valA instanceof Date && valB instanceof Date) {
-        return sortDir === 'asc' ? valA.getTime() - valB.getTime() : valB.getTime() - valA.getTime();
+        return sort.direction === 'asc' ? valA.getTime() - valB.getTime() : valB.getTime() - valA.getTime();
+      }
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return sort.direction === 'asc' ? valA - valB : valB - valA;
       }
       if (typeof valA === 'string' && typeof valB === 'string') {
-        return sortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return sort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
       }
       return 0;
     });
-  }, [filteredReservations, sortBy, sortDir]);
+  }, [filteredReservations, sort]);
+  // Chevron for sort direction
+  const getChevron = (key: SortKey) => {
+    if (sort.key !== key) return <ChevronDown className="inline h-4 w-4 text-muted-foreground opacity-50" />;
+    return sort.direction === 'asc' ? <ChevronDown className="inline h-4 w-4 text-muted-foreground rotate-180" /> : <ChevronDown className="inline h-4 w-4 text-muted-foreground" />;
+  };
+
+  // Handle sort change
+  const handleSort = (key: SortKey) => {
+    setSort(prev => prev.key === key ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' });
+    setPage(1);
+  };
 
   // Pagination
   const totalPages = Math.ceil(sortedReservations.length / PAGE_SIZE);
   const paginatedReservations = sortedReservations.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // Summary counts
-  const summary = useMemo(() => {
-    const total = reservations.length;
-    const upcoming = reservations.filter(r => r.status === 'Upcoming').length;
-    const canceled = reservations.filter(r => r.status === 'Canceled').length;
-    return { total, upcoming, canceled };
-  }, [reservations]);
+  // Summary counts (optional, can update if needed)
 
-  // Actions
+  // Actions (edit/save/cancel/complete would require API mutation endpoints)
   const handleEdit = (reservation: any) => {
     setEditReservation(reservation);
     setEditModalOpen(true);
   };
-  const handleSaveEdit = (updated: any) => {
-    setReservations(reservations.map(r => (r.id === updated.id ? updated : r)));
-    setEditModalOpen(false);
-    setEditReservation(null);
+
+  // Attractive, consistent Edit Modal UI
+  const EditReservationModal = ({ open, reservation, onClose }: { open: boolean, reservation: any, onClose: () => void }) => {
+    const { data: rooms = [] } = useGetAllRoomsQuery();
+    // Fetch room type by reservation id for price calculation
+    const { data: roomTypeByReservation } = useGetRoomTypeByReservationIdQuery(reservation?.id, { skip: !reservation?.id });
+    const [form, setForm] = useState(() => reservation ? {
+      firstName: reservation.firstName || '',
+      lastName: reservation.lastName || '',
+      roomNumber: reservation.roomNumber || '',
+      checkIn: reservation.checkIn ? new Date(reservation.checkIn) : null,
+      checkOut: reservation.checkOut ? new Date(reservation.checkOut) : null,
+      totalPrice: reservation.totalPrice || 0,
+      numGuests: reservation.numGuests || 1,
+    } : null);
+
+    const [updateReservation, { isLoading: isSaving }] = useUpdateReservationMutation();
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    React.useEffect(() => {
+      if (reservation) {
+        setForm({
+          firstName: reservation.firstName || '',
+          lastName: reservation.lastName || '',
+          roomNumber: reservation.roomNumber || '',
+          checkIn: reservation.checkIn ? new Date(reservation.checkIn) : null,
+          checkOut: reservation.checkOut ? new Date(reservation.checkOut) : null,
+          totalPrice: reservation.totalPrice || 0,
+          numGuests: reservation.numGuests || 1,
+        });
+      }
+    }, [reservation]);
+
+    // Use price from roomTypeByReservation (API fetch by reservation id)
+    const pricePerNight = roomTypeByReservation?.pricePerNight || 0;
+    const nights = form?.checkIn && form?.checkOut ? Math.max(1, Math.ceil((form.checkOut.getTime() - form.checkIn.getTime()) / (1000 * 60 * 60 * 24))) : 1;
+    const dynamicTotal = pricePerNight * nights;
+
+    React.useEffect(() => {
+      if (form && form.checkIn && form.checkOut && pricePerNight) {
+        setForm(f => f ? { ...f, totalPrice: dynamicTotal } : f);
+      }
+      // eslint-disable-next-line
+    }, [form?.checkIn, form?.checkOut, pricePerNight]);
+
+    const handleSave = async () => {
+      setErrorMsg(null);
+      if (!form || !form.checkIn || !form.checkOut || !form.roomNumber) return;
+      try {
+        await updateReservation({
+          id: reservation.id,
+          checkIn: form.checkIn.toISOString(),
+          checkOut: form.checkOut.toISOString(),
+          numGuests: form.numGuests,
+          totalPrice: dynamicTotal,
+          roomNumber: form.roomNumber,
+        }).unwrap();
+        onClose();
+        if (typeof refetch === 'function') refetch();
+      } catch (e: any) {
+        setErrorMsg(e?.data?.message || 'Failed to update reservation.');
+      }
+    };
+
+    if (!open || !form) return null;
+    return (
+      <Dialog open={open} onOpenChange={val => { if (!val) onClose(); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Reservation</DialogTitle>
+          </DialogHeader>
+          <Card className="shadow-none border-none">
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-semibold">Guest First Name</label>
+                  <Input
+                    value={form.firstName}
+                    onChange={e => setForm(f => f ? { ...f, firstName: e.target.value } : f)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">Guest Last Name</label>
+                  <Input
+                    value={form.lastName}
+                    onChange={e => setForm(f => f ? { ...f, lastName: e.target.value } : f)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">Guests</label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={form.numGuests}
+                    onChange={e => setForm(f => f ? { ...f, numGuests: Number(e.target.value) } : f)}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-semibold">Room Number</label>
+                  <select
+                    className="w-full px-3 py-2 h-10 border border-input rounded-md bg-background text-foreground text-sm"
+                    value={form.roomNumber}
+                    onChange={e => setForm(f => f ? { ...f, roomNumber: e.target.value } : f)}
+                  >
+                    <option value="">Select a room</option>
+                    {rooms.map((room: any) => (
+                      <option key={room.id} value={room.roomNumber}>{room.roomNumber}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-semibold">Date Range</label>
+                  <DateRangeCalendar
+                    startDate={form.checkIn}
+                    endDate={form.checkOut}
+                    onStartDateChange={date => setForm(f => f ? { ...f, checkIn: date } : f)}
+                    onEndDateChange={date => setForm(f => f ? { ...f, checkOut: date } : f)}
+                  />
+                </div>
+                <div className="md:col-span-2 flex items-center justify-between mt-2">
+                  <span className="font-semibold text-base">Total Price:</span>
+                  <span className="text-lg font-bold">${dynamicTotal.toLocaleString()}</span>
+                </div>
+                {errorMsg && <div className="md:col-span-2 text-red-600 text-sm">{errorMsg}</div>}
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancel</Button>
+              <Button onClick={handleSave} disabled={isSaving || !form.checkIn || !form.checkOut || !form.roomNumber || !form.numGuests}>
+                {isSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </CardFooter>
+          </Card>
+        </DialogContent>
+      </Dialog>
+    );
   };
-  const handleCancel = (id: string) => {
-    setReservations(reservations.map(r => (r.id === id ? { ...r, status: 'Canceled' } : r)));
-  };
-  const handleComplete = (id: string) => {
-    setReservations(reservations.map(r => (r.id === id ? { ...r, status: 'Completed' } : r)));
-  };
+//   const handleSaveEdit = (updated: any) => {
+//     // TODO: Implement API update
+//     setEditModalOpen(false);
+//     setEditReservation(null);
+//   };
+//   const handleCancel = (id: string) => {
+//     // TODO: Implement API cancel
+//   };
+//   const handleComplete = (id: string) => {
+//     // TODO: Implement API complete
+//   };
+
+  if (isLoading) return <Loader />;
+  if (error) return <div className="p-8 text-red-600">Failed to load reservations.</div>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -588,32 +583,87 @@ const ManageReservations: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Guest Name</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Room</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Check-in</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Check-out</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Status</TableCell>
-                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Total Price</TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('guestName')}
+                      >Guest Name {getChevron('guestName')}</TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('roomNumber')}
+                      >Room {getChevron('roomNumber')}</TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('checkIn')}
+                      >Check-in {getChevron('checkIn')}</TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('checkOut')}
+                      >Check-out {getChevron('checkOut')}</TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('status')}
+                      >Status {getChevron('status')}</TableCell>
+                      <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3 cursor-pointer select-none" onClick={() => handleSort('totalPrice')}
+                      >Total Price {getChevron('totalPrice')}</TableCell>
                       <TableCell className="font-semibold text-xs uppercase text-muted-foreground py-3">Actions</TableCell>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedReservations.map(r => (
                       <TableRow key={r.id} className="hover:bg-muted/50">
-                        <TableCell className="py-3">{r.guestName}</TableCell>
-                        <TableCell className="py-3">{r.roomType} #{r.room}</TableCell>
-                        <TableCell className="py-3 text-muted-foreground">{r.checkIn.toLocaleDateString()}</TableCell>
-                        <TableCell className="py-3 text-muted-foreground">{r.checkOut.toLocaleDateString()}</TableCell>
-                        <TableCell className="py-3 font-semibold"><StatusBadge status={r.status} /></TableCell>
+                        <TableCell className="py-3">{r.firstName} {r.lastName}</TableCell>
+                        <TableCell className="py-3">{r.roomNumber}</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">{(() => { const d = new Date(r.checkIn); d.setMinutes(d.getMinutes() + d.getTimezoneOffset()); return d.toLocaleDateString(); })()}</TableCell>
+                        <TableCell className="py-3 text-muted-foreground">{(() => { const d = new Date(r.checkOut); d.setMinutes(d.getMinutes() + d.getTimezoneOffset()); return d.toLocaleDateString(); })()}</TableCell>
+                        <TableCell className="py-3 font-semibold"><StatusBadge status={r.status ?? ''} /></TableCell>
                         <TableCell className="py-3">${r.totalPrice}</TableCell>
-                        <TableCell className="py-3 w-1/6">
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => handleEdit(r)} className="cursor-pointer">Edit</Button>
-                            {r.status !== 'Canceled' && r.status !== 'Completed' && (
-                              <Button size="sm" variant="destructive" onClick={() => handleCancel(r.id)} disabled={r.status === 'Canceled'} className="cursor-pointer">Cancel</Button>
+                        <TableCell className="py-3 w-1/6 align-middle">
+                          <div className="flex flex-row items-center justify-end gap-2 min-h-10">
+                            {r.status === 'PENDING' && (
+                              <Button size="sm" variant="outline" onClick={() => handleEdit(r)} className="cursor-pointer min-w-8 shrink-0"><Edit className="h-4 w-4" /></Button>
                             )}
-                            {r.status !== 'Canceled' && r.status !== 'Completed' && (
-                              <Button size="sm" variant="default" onClick={() => handleComplete(r.id)} disabled={r.status === 'Completed' || r.status === 'Canceled'} className="cursor-pointer">Check Out</Button>
+                            {r.status === 'PENDING' && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="cursor-pointer bg-green-600 hover:bg-green-700 text-white min-w-20 shrink-0"
+                                onClick={() => handleCheckIn(r.id ?? '')}
+                                disabled={isCheckingIn}
+                              >
+                                {isCheckingIn ? 'Checking In...' : 'Check In'}
+                              </Button>
+                            )}
+                            {r.status === 'PENDING' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="cursor-pointer border-red-600 text-red-600 hover:bg-red-50 min-w-20 shrink-0"
+                                onClick={() => handleCancel(r.id ?? '')}
+                                disabled={isCancelling}
+                              >
+                                {isCancelling ? 'Cancelling...' : 'Cancel'}
+                              </Button>
+                            )}
+                            {r.status === 'CONFIRMED' && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="cursor-pointer bg-red-600 hover:bg-red-700 text-white min-w-20 shrink-0"
+                                onClick={() => handleCheckOut(r.id ?? '')}
+                                disabled={isCheckingOut}
+                              >
+                                {isCheckingOut ? 'Checking Out...' : 'Check Out'}
+                              </Button>
+                            )}
+                            {r.status === 'CANCELLED' && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="cursor-not-allowed bg-gray-300 text-gray-500 min-w-20 shrink-0"
+                                disabled
+                              >
+                                Cancelled
+                              </Button>
+                            )}
+                            {r.status === 'COMPLETED' && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="cursor-not-allowed bg-gray-300 text-gray-500 min-w-20 shrink-0"
+                                disabled
+                              >
+                                Completed
+                              </Button>
                             )}
                           </div>
                         </TableCell>
@@ -660,14 +710,13 @@ const ManageReservations: React.FC = () => {
         open={editModalOpen}
         reservation={editReservation}
         onClose={() => { setEditModalOpen(false); setEditReservation(null); }}
-        onSave={handleSaveEdit}
       />
     </div>
   );
 };
 
 // Chevron icons for sorting
-const ChevronDownIcon = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>;
-const ChevronUpIcon = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>;
+// const ChevronDownIcon = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>;
+// const ChevronUpIcon = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>;
 
 export default ManageReservations;
