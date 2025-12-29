@@ -133,8 +133,8 @@ public class SecurityConfig {
                 .requestMatchers("/transactions/user/{userId}").hasAnyRole("ADMIN", "CUSTOMER") //GET transaction by USER ID
                 .requestMatchers("/transactions/reservation/{reservationId}").hasAnyRole("ADMIN", "CUSTOMER") //GET transaction by RESERVATION ID
 
-                .requestMatchers("/logout").authenticated() // Logout for any authenticated user
-                .requestMatchers("/users/logout").authenticated() // Logout for any authenticated user
+                .requestMatchers("/logout").permitAll() // Logout for any authenticated user
+                .requestMatchers("/users/logout").permitAll() // Logout for any authenticated user
 
             //TEST ROUTES/////////////////////////////////////////////////////////////////////////////////////
                 .requestMatchers("/tests/hello").permitAll()
