@@ -287,15 +287,8 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
                         } catch {}
                         clearCredentials();
                         dispatch({ type: 'auth/logout' });
-                        if (isGoogleOAuth) {
-                          // Google logout: revoke session at Google and redirect to app home
-                          const googleLogoutUrl =
-                            'https://accounts.google.com/Logout?continue=https://appengine.google.com/_ah/logout?continue=' +
-                            encodeURIComponent(window.location.origin);
-                          window.location.href = googleLogoutUrl;
-                        } else {
-                          window.location.reload();
-                        }
+                        // Force a reload with cache-busting to ensure session is cleared for OAuth users
+                        window.location.replace(window.location.pathname + '?logout=' + Date.now());
                       }}
                     >
                       Sign Out
