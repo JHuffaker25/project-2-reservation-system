@@ -259,8 +259,6 @@ export const Navbar = React.forwardRef<HTMLElement, Props>(
           <div className="flex items-center gap-3">
             {(() => {
               const auth = useAppSelector(state => state.auth);
-              // Helper: Detect if user is Google OAuth
-              const isGoogleOAuth = auth.user && auth.user.isGoogleUser === true;
               if (auth.isAuthenticated) {
                 return (
                   <>
